@@ -20,7 +20,10 @@
 - [x] **0.7c** Install missing dev dependency: `npm install -D @vitejs/plugin-react`
 - [x] **0.7d** Verify asset paths in `frontend/index.html` work with subpath hosting
 - [x] **0.8** Verify clean build (`npm run build` passes with zero errors)
-- [ ] **0.9** Push to GitHub `main` branch and verify Actions workflow triggers successfully
+- [x] **0.9** Push to GitHub `main` branch and verify Actions workflow triggers successfully
+  > **Git installed locally:** `C:\Users\mattg\AppData\Local\MinGit\cmd\git.exe` (MinGit 2.45.2)
+  > **Workflow:** All changes are committed locally then pushed to `main`. Push triggers GitHub Actions → builds → deploys to GitHub Pages.
+  > **Actions run:** https://github.com/mgreenhough/Project_Tracker/actions/runs/24917879754
 
 ---
 
