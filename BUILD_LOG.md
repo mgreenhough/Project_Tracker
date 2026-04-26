@@ -163,8 +163,8 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ## Phase 11 — Deployment
 
-- [ ] **11.1** Add environment variable config (`VITE_API_URL`, `JWT_SECRET`, etc.)
-- [ ] **11.2** Build frontend for production (`npm run build`)
+- [x] **11.1** Add environment variable config (`VITE_API_URL`, `JWT_SECRET`, etc.)
+- [x] **11.2** Build frontend for production (`npm run build`)
 - [ ] **11.3** Deploy frontend to GitHub Pages (via Actions workflow)
 - [ ] **11.4** Deploy backend to Linux server (PM2 / Docker / systemd)
   > **Note:** The target server (`203.57.51.49` / `jocko.ai`) already hosts the **Jocko AI Coach Bot**.
