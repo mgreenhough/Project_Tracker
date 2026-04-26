@@ -22,7 +22,7 @@ app.use(helmet());
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
   : process.env.NODE_ENV === 'production'
-    ? ['https://mgreenhough.github.io', 'http://localhost:5173', 'http://localhost:4173']
+    ? ['https://mgreenhough.github.io']
     : ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use(cors({
