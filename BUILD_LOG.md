@@ -216,12 +216,18 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
   > **No port conflict** with Jocko bot — it runs purely via Telegram API polling.
 - [x] **11.5** Verify public read-only access from external network
   > **Verified:** `curl http://203.57.51.49:3001/api/health` returns `200 OK`
-- [x] **11.6** Verify admin editing works end-to-end on deployed instance
+- [] **11.6** Verify admin editing works end-to-end on deployed instance
   > **Pending:** Requires frontend API URL update to point to production server
 - [x] **11.7** Verify persistence after server restart (SQLite data survives)
   > **Verified:** PM2 configured with `pm2 save` and `pm2 startup systemd` for auto-restart
 - [x] **11.8** Document server restart / update procedure in README
   > **Documented below:**
+
+- [x] **11.9** Fix Mixed Content / CORS issues for production frontend
+  > **Issue:** Frontend is on `https://mgreenhough.github.io` but API was on `http://203.57.51.49:3001`. Browsers block HTTP requests from HTTPS pages.
+  > **Fix:** Installed Caddy reverse proxy on server. Caddy listens on `:443` (HTTPS) and `:80` (HTTP), terminates TLS with a self-signed certificate, and reverse-proxies to the Node.js backend on `localhost:3001`. CORS headers are injected by Caddy for the GitHub Pages origin.
+  > **API URL updated:** `frontend/.env.production` now points to `https://203.57.51.49:443/api`
+  > **Verified:** `curl -k https://203.57.51.49:443/api/health` returns `200 OK` with correct CORS headers. OPTIONS preflight responds `204 No Content`.
 
 ---
 
@@ -232,6 +238,10 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 - [ ] **12.3** Add export / backup feature (JSON dump of all projects)
 
 ---
+
+## Phase 13 Multiple user implimentation
+
+
 
 ## Build Status
 
