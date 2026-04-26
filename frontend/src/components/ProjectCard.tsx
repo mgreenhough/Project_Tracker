@@ -156,7 +156,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
   return (
     <div
       className={`
-        relative min-w-[280px] max-w-[320px] rounded-xl p-4 flex flex-col gap-3
+        relative w-[320px] rounded-xl p-4 flex flex-col gap-3
         border transition-all duration-200
         ${
           isArchived
@@ -192,7 +192,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           />
         ) : (
           <h3
-            className={`font-semibold truncate flex-1 cursor-pointer ${
+            className={`font-semibold truncate flex-1 cursor-pointer select-none ${
               isArchived ? 'text-gray-400' : 'text-white'
             } ${isAdmin ? 'hover:text-neon-blue' : ''}`}
             onClick={() => isAdmin && setEditingTitle(true)}

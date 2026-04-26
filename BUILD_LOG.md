@@ -79,13 +79,13 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ## Phase 5 — Unique Zoom / Overlap View
 
-- [ ] **5.1** Add zoom state (slider or pinch gesture) to `ProjectStack`
-- [ ] **5.2** Implement card overlap logic: negative margin based on zoom level
-- [ ] **5.3** Implement vertical cascade: each overlapped card offset by ~1 line downward
-- [ ] **5.4** Ensure left-most (highest priority) card has highest z-index
-- [ ] **5.5** Verify title and due-date remain fully readable at maximum overlap
-- [ ] **5.6** Verify overlap behaviour on mobile (cascade + readability)
-- [ ] **5.7** Verify zoom works on both desktop (scroll wheel / slider) and mobile (pinch)
+- [x] **5.1** Add zoom state AS PER SPEC LINES 279 - 286 (scroll wheel, slider and pinch gesture) to `ProjectStack`
+- [x] **5.2** Implement card overlap logic: negative margin based on zoom level
+- [x] **5.3** Implement vertical cascade: each overlapped card offset by ~1 line downward
+- [x] **5.4** Ensure left-most (highest priority) card has highest z-index
+- [x] **5.5** Verify title and due-date remain fully readable at maximum overlap
+- [x] **5.6** Verify overlap behaviour on mobile (cascade + readability)
+- [x] **5.7** Verify zoom works on both desktop (scroll wheel / slider) and mobile (pinch)
 
 ---
 
