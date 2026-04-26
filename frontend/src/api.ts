@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://203.57.51.49:443/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.khortech.com.au/api'
 
 function getAccessToken(): string | null {
   return localStorage.getItem('accessToken')
