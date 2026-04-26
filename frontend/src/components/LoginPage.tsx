@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -18,6 +18,7 @@ export function LoginPage() {
     setLoading(true)
 
     try {
+      console.log('Attempting login to:', `${API_URL}/auth/login`)
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,8 +37,9 @@ export function LoginPage() {
       localStorage.setItem('refreshToken', data.refreshToken)
       await checkAuth()
       navigate('/')
-    } catch {
-      setError('Network error')
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(`Network error: ${err?.message || 'Failed to connect to server'}`)
       setLoading(false)
     }
   }

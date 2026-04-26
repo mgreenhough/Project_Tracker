@@ -18,3 +18,7 @@ https://github.com/mgreenhough
 USER = mgreenhough
 PASSWORD = 3590matt..
 REPO = Project_Tracker
+
+# Admin Login Credentials
+ADMIN_EMAIL = admin@example.com
+ADMIN_PASSWORD = admin123

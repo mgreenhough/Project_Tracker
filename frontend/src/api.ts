@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 function getAccessToken(): string | null {
   return localStorage.getItem('accessToken')
@@ -57,25 +57,26 @@ export async function createProject(project: any) {
   return res.json()
 }
 
-export async function updateProjectApi(id: string, updates: any) {
+export async function updateProject(id: string, project: any) {
   const res = await fetchWithAuth(`/projects/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(updates),
+    body: JSON.stringify(project),
   })
   if (!res.ok) throw new Error('Failed to update project')
   return res.json()
 }
 
-export async function deleteProjectApi(id: string) {
+export async function deleteProject(id: string) {
   const res = await fetchWithAuth(`/projects/${id}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete project')
+  return res.json()
 }
 
-// Steps (admin)
-export async function createStep(step: any) {
-  const res = await fetchWithAuth('/steps', {
+// Steps
+export async function createStep(projectId: string, step: any) {
+  const res = await fetchWithAuth(`/projects/${projectId}/steps`, {
     method: 'POST',
     body: JSON.stringify(step),
   })
@@ -83,18 +84,43 @@ export async function createStep(step: any) {
   return res.json()
 }
 
-export async function updateStepApi(id: string, updates: any) {
-  const res = await fetchWithAuth(`/steps/${id}`, {
+export async function updateStep(projectId: string, stepId: string, step: any) {
+  const res = await fetchWithAuth(`/projects/${projectId}/steps/${stepId}`, {
     method: 'PUT',
-    body: JSON.stringify(updates),
+    body: JSON.stringify(step),
   })
   if (!res.ok) throw new Error('Failed to update step')
   return res.json()
 }
 
-export async function deleteStepApi(id: string) {
-  const res = await fetchWithAuth(`/steps/${id}`, {
+export async function deleteStep(projectId: string, stepId: string) {
+  const res = await fetchWithAuth(`/projects/${projectId}/steps/${stepId}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete step')
+  return res.json()
+}
+
+// Auth
+export async function login(email: string, password: string) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Login failed' }))
+    throw new Error(err.error || 'Login failed')
+  }
+  return res.json()
+}
+
+export async function refreshAccessToken(refreshToken: string) {
+  const res = await fetch(`${API_URL}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+  if (!res.ok) throw new Error('Refresh failed')
+  return res.json()
 }
