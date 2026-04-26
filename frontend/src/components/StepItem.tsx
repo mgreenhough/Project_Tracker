@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectStore } from '../store/useProjectStore'
@@ -27,9 +28,94 @@ const statusConfig = {
   },
 }
 
+function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timer.current) clearTimeout(timer.current)
+      timer.current = setTimeout(() => fn(...args), delay)
+    },
+    [fn, delay]
+  )
+}
+
 export function StepItem({ step, isAdmin }: StepItemProps) {
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
+  const updateStep = useProjectStore((s) => s.updateStep)
+  const deleteStep = useProjectStore((s) => s.deleteStep)
   const config = statusConfig[step.status]
+
+  const [editingContent, setEditingContent] = useState(false)
+  const [contentValue, setContentValue] = useState(step.content)
+  const contentInputRef = useRef<HTMLInputElement>(null)
+
+  const [editingDate, setEditingDate] = useState(false)
+  const [dateValue, setDateValue] = useState(step.dueDate || '')
+
+  const debouncedUpdateContent = useDebounce((projectId: string, stepId: string, content: string) => {
+    updateStep(projectId, stepId, { content })
+  }, 500)
+
+  const debouncedUpdateDate = useDebounce((projectId: string, stepId: string, dueDate: string | null) => {
+    updateStep(projectId, stepId, { dueDate })
+  }, 500)
+
+  useEffect(() => {
+    setContentValue(step.content)
+  }, [step.content])
+
+  useEffect(() => {
+    setDateValue(step.dueDate || '')
+  }, [step.dueDate])
+
+  useEffect(() => {
+    if (editingContent && contentInputRef.current) {
+      contentInputRef.current.focus()
+      contentInputRef.current.select()
+    }
+  }, [editingContent])
+
+  const handleContentConfirm = () => {
+    setEditingContent(false)
+    updateStep(step.projectId, step.id, { content: contentValue.trim() || step.content })
+  }
+
+  const handleContentCancel = () => {
+    setEditingContent(false)
+    setContentValue(step.content)
+  }
+
+  const handleContentKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleContentConfirm()
+    } else if (e.key === 'Escape') {
+      handleContentCancel()
+    }
+  }
+
+  const handleDateConfirm = () => {
+    setEditingDate(false)
+    const trimmed = dateValue.trim()
+    const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
+    if (trimmed === '' || ddmmyy.test(trimmed)) {
+      updateStep(step.projectId, step.id, { dueDate: trimmed || null })
+    } else {
+      setDateValue(step.dueDate || '')
+    }
+  }
+
+  const handleDateCancel = () => {
+    setEditingDate(false)
+    setDateValue(step.dueDate || '')
+  }
+
+  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleDateConfirm()
+    } else if (e.key === 'Escape') {
+      handleDateCancel()
+    }
+  }
 
   const {
     attributes,
@@ -72,14 +158,68 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       >
         <span className={config.className}>{config.icon}</span>
       </button>
-      <span
-        className={`flex-1 truncate ${
-          step.status === 'COMPLETE' ? 'line-through opacity-40' : 'text-gray-200'
-        }`}
-      >
-        {step.content}
-      </span>
-      <DueDateBadge dueDate={step.dueDate} label="" />
+
+      {editingContent && isAdmin ? (
+        <input
+          ref={contentInputRef}
+          type="text"
+          value={contentValue}
+          onChange={(e) => {
+            setContentValue(e.target.value)
+            debouncedUpdateContent(step.projectId, step.id, e.target.value)
+          }}
+          onBlur={handleContentConfirm}
+          onKeyDown={handleContentKeyDown}
+          className="flex-1 bg-transparent border-b border-neon-blue text-gray-200 outline-none min-w-0"
+        />
+      ) : (
+        <span
+          className={`flex-1 truncate cursor-pointer ${
+            step.status === 'COMPLETE' ? 'line-through opacity-40' : 'text-gray-200'
+          } ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          onClick={() => isAdmin && setEditingContent(true)}
+        >
+          {step.content}
+        </span>
+      )}
+
+      {editingDate && isAdmin ? (
+        <input
+          type="text"
+          value={dateValue}
+          onChange={(e) => {
+            setDateValue(e.target.value)
+            const trimmed = e.target.value.trim()
+            const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
+            if (trimmed === '' || ddmmyy.test(trimmed)) {
+              debouncedUpdateDate(step.projectId, step.id, trimmed || null)
+            }
+          }}
+          onBlur={handleDateConfirm}
+          onKeyDown={handleDateKeyDown}
+          placeholder="dd/mm/yy"
+          className="bg-transparent border-b border-neon-blue text-xs font-medium outline-none w-20 text-white"
+        />
+      ) : (
+        <span
+          className={`cursor-pointer ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          onClick={() => isAdmin && setEditingDate(true)}
+        >
+          <DueDateBadge dueDate={step.dueDate} label="" />
+        </span>
+      )}
+
+      {isAdmin && (
+        <button
+          type="button"
+          onClick={() => deleteStep(step.projectId, step.id)}
+          className="text-gray-600 hover:text-neon-red transition-colors w-6 h-6 flex items-center justify-center rounded hover:bg-white/5"
+          title="Delete step"
+          aria-label="Delete step"
+        >
+          ×
+        </button>
+      )}
     </div>
   )
 }

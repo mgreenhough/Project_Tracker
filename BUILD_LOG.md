@@ -1,4 +1,4 @@
-# Priority Stack Project Tracker — Build Log
+git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Priority Stack Project Tracker — Build Log
 
 > Iterative build checklist with verification gates.  
 > Tick each box as it is completed and tested.
@@ -48,18 +48,17 @@
 - [x] **2.5** Create `ArchivedRow` container for completed projects below active stack
 - [x] **2.6** Apply subdued colour treatment to archived cards (greyed/dimmed)
 - [x] **2.7** Apply dark-theme neon colour tokens via Tailwind arbitrary values / CSS variables
-- [x] **2.8** Verify all components render correctly with mock data (no drag yet)
+- [x] **2.8** Verify all components render correct y with mock data (no drag yet)
 
 ---
 
-## Phase 3 — Drag-and-Drop System
+## Phase 3 — Drag-and-Drop Sys em
 
 - [x] **3.1** Wrap `ProjectStack` with `@dnd-kit/core` `DndContext`
-- [x] **3.2** Make `ProjectCard` a `@dnd-kit/sortable` item with drag handle (`[≡]`)
-- [x] **3.3** Implement `onDragEnd` handler to update `priority_index` in Zustand store
-- [x] **3.4** Add subtle CSS transition for drag overlay (fast, <150ms)
-- [x] **3.5** Implement step-level drag-and-drop reordering within a project card
-- [x] **3.6** Test mouse drag on desktop (Chrome, Firefox, Edge)
+- [x] **3.2*  Make `ProjectCard` a `@dnd-kit/sortable` item with drag handle (`[≡]`)
+- [x] **3.3** I plement `onDragEnd` handler to update `priority_index` in Zustand store - [x] **3.4** Add subtle CSS transition for drag overlay (fast, <150ms)
+- [x] **3 5** Implement step-level drag-and-drop reordering within a proje t card
+- [x] **3.6** Test mouse drag on desktop (Chrome, Firefox, Ed e)
 - [x] **3.7** Test touch drag on mobile (iOS Safari, Android Chrome)
 - [x] **3.8** Ensure drag handles meet minimum 44×44dp touch target
 
@@ -67,14 +66,14 @@
 
 ## Phase 4 — Inline Editing & Low-Friction UX
 
-- [ ] **4.1** Add click-to-edit for project title (auto-focus, highlight text)
-- [ ] **4.2** Add click-to-edit for step content
-- [ ] **4.3** Add inline date-picker for project due-date (dd/mm/yy format)
-- [ ] **4.4** Add inline date-picker for step due-date
-- [ ] **4.5** Implement keyboard shortcuts: `Enter` to confirm, `Escape` to cancel
-- [ ] **4.6** Implement auto-save debounce (500ms) on all editable fields
-- [ ] **4.7** Add inline controls: add-step (`+`), delete-step (`×`), archive-project
-- [ ] **4.8** Verify no full-page reloads or modal navigation required for any edit
+- [x] **4.1** Add click-to-edit for project title (auto-focus, highlight text)
+- [x] **4.2** Add click-to-edit for step content
+- [x] **4.3** Add inline date-picker for project due-date (dd/mm/yy format)
+- [x] **4.4** Add inline date-picker for step due-date
+- [x] **4.5** Implement keyboard shortcuts: `Enter` to confirm, `Escape` to cancel
+- [x] **4.6** Implement auto-save debounce (500ms) on all editable fields
+- [x] **4.7** Add inline controls: add-step (`+`), delete-step (`×`), archive-project
+- [x] **4.8** Verify no full-page reloads or modal navigation required for any edit
 
 ---
 

@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -30,9 +31,106 @@ interface ProjectCardProps {
   }
 }
 
+function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timer.current) clearTimeout(timer.current)
+      timer.current = setTimeout(() => fn(...args), delay)
+    },
+    [fn, delay]
+  )
+}
+
 export function ProjectCard({ project, isAdmin, isArchived = false, dragHandleProps }: ProjectCardProps) {
   const reorderSteps = useProjectStore((s) => s.reorderSteps)
+  const updateProject = useProjectStore((s) => s.updateProject)
+  const addStep = useProjectStore((s) => s.addStep)
+  const archiveProject = useProjectStore((s) => s.archiveProject)
+  const deleteProject = useProjectStore((s) => s.deleteProject)
   const steps = [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder)
+
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleValue, setTitleValue] = useState(project.title)
+  const titleInputRef = useRef<HTMLInputElement>(null)
+
+  const [editingDate, setEditingDate] = useState(false)
+  const [dateValue, setDateValue] = useState(project.dueDate || '')
+
+  const debouncedUpdateTitle = useDebounce((id: string, title: string) => {
+    updateProject(id, { title })
+  }, 500)
+
+  const debouncedUpdateDate = useDebounce((id: string, dueDate: string | null) => {
+    updateProject(id, { dueDate })
+  }, 500)
+
+  useEffect(() => {
+    setTitleValue(project.title)
+  }, [project.title])
+
+  useEffect(() => {
+    setDateValue(project.dueDate || '')
+  }, [project.dueDate])
+
+  useEffect(() => {
+    if (editingTitle && titleInputRef.current) {
+      titleInputRef.current.focus()
+      titleInputRef.current.select()
+    }
+  }, [editingTitle])
+
+  const handleTitleConfirm = () => {
+    setEditingTitle(false)
+    updateProject(project.id, { title: titleValue.trim() || project.title })
+  }
+
+  const handleTitleCancel = () => {
+    setEditingTitle(false)
+    setTitleValue(project.title)
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTitleConfirm()
+    } else if (e.key === 'Escape') {
+      handleTitleCancel()
+    }
+  }
+
+  const handleDateConfirm = () => {
+    setEditingDate(false)
+    const trimmed = dateValue.trim()
+    const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
+    if (trimmed === '' || ddmmyy.test(trimmed)) {
+      updateProject(project.id, { dueDate: trimmed || null })
+    } else {
+      setDateValue(project.dueDate || '')
+    }
+  }
+
+  const handleDateCancel = () => {
+    setEditingDate(false)
+    setDateValue(project.dueDate || '')
+  }
+
+  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleDateConfirm()
+    } else if (e.key === 'Escape') {
+      handleDateCancel()
+    }
+  }
+
+  const handleAddStep = () => {
+    const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.stepOrder)) + 1 : 0
+    addStep(project.id, {
+      content: 'New step',
+      status: 'CLEAR',
+      stepOrder: nextOrder,
+      dueDate: null,
+    })
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -79,16 +177,56 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
             ≡
           </button>
         )}
-        <h3
-          className={`font-semibold truncate flex-1 ${
-            isArchived ? 'text-gray-400' : 'text-white'
-          }`}
-        >
-          {project.title}
-        </h3>
+        {editingTitle && isAdmin ? (
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={titleValue}
+            onChange={(e) => {
+              setTitleValue(e.target.value)
+              debouncedUpdateTitle(project.id, e.target.value)
+            }}
+            onBlur={handleTitleConfirm}
+            onKeyDown={handleTitleKeyDown}
+            className="flex-1 bg-transparent border-b border-neon-blue text-white font-semibold outline-none min-w-0"
+          />
+        ) : (
+          <h3
+            className={`font-semibold truncate flex-1 cursor-pointer ${
+              isArchived ? 'text-gray-400' : 'text-white'
+            } ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+            onClick={() => isAdmin && setEditingTitle(true)}
+          >
+            {project.title}
+          </h3>
+        )}
       </div>
 
-      <DueDateBadge dueDate={project.dueDate} />
+      {editingDate && isAdmin ? (
+        <input
+          type="text"
+          value={dateValue}
+          onChange={(e) => {
+            setDateValue(e.target.value)
+            const trimmed = e.target.value.trim()
+            const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
+            if (trimmed === '' || ddmmyy.test(trimmed)) {
+              debouncedUpdateDate(project.id, trimmed || null)
+            }
+          }}
+          onBlur={handleDateConfirm}
+          onKeyDown={handleDateKeyDown}
+          placeholder="dd/mm/yy"
+          className="bg-transparent border-b border-neon-blue text-xs font-medium outline-none w-fit text-white"
+        />
+      ) : (
+        <span
+          className={`w-fit cursor-pointer ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          onClick={() => isAdmin && setEditingDate(true)}
+        >
+          <DueDateBadge dueDate={project.dueDate} />
+        </span>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -109,6 +247,35 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           </div>
         </SortableContext>
       </DndContext>
+
+      {isAdmin && !isArchived && (
+        <div className="flex items-center gap-2 mt-1">
+          <button
+            type="button"
+            onClick={handleAddStep}
+            className="text-xs text-gray-500 hover:text-neon-green transition-colors px-2 py-1 rounded hover:bg-white/5"
+            title="Add step"
+          >
+            + Step
+          </button>
+          <button
+            type="button"
+            onClick={() => archiveProject(project.id)}
+            className="text-xs text-gray-500 hover:text-neon-orange transition-colors px-2 py-1 rounded hover:bg-white/5"
+            title="Archive project"
+          >
+            Archive
+          </button>
+          <button
+            type="button"
+            onClick={() => deleteProject(project.id)}
+            className="text-xs text-gray-500 hover:text-neon-red transition-colors px-2 py-1 rounded hover:bg-white/5 ml-auto"
+            title="Delete project"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   )
 }
