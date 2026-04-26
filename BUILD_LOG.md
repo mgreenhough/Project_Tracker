@@ -91,17 +91,17 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ## Phase 6 — Backend API (Node.js + SQLite)
 
-- [ ] **6.1** Scaffold Express server with `cors`, `helmet`, `express.json()`
-- [ ] **6.2** Initialise SQLite database with `projects` and `steps` tables (schema from spec)
-- [ ] **6.3** Implement **Public** `GET /projects` endpoint (returns non-archived public projects)
-- [ ] **6.4** Implement **Admin** `POST /project` — protected by auth middleware
-- [ ] **6.5** Implement **Admin** `PUT /project/:id`
-- [ ] **6.6** Implement **Admin** `DELETE /project/:id` (soft delete)
-- [ ] **6.6** Implement **Admin** `POST /step`
-- [ ] **6.7** Implement **Admin** `PUT /step/:id`
-- [ ] **6.8** Implement **Admin** `DELETE /step/:id`
-- [ ] **6.9** Add request validation (Joi or Zod) on all write endpoints
-- [ ] **6.10** Verify API with `curl` / Postman collection
+- [x] **6.1** Scaffold Express server with `cors`, `helmet`, `express.json()`
+- [x] **6.2** Initialise SQLite database with `projects` and `steps` tables (schema from spec)
+- [x] **6.3** Implement **Public** `GET /projects` endpoint (returns non-archived public projects)
+- [x] **6.4** Implement **Admin** `POST /project` — protected by auth middleware
+- [x] **6.5** Implement **Admin** `PUT /project/:id`
+- [x] **6.6** Implement **Admin** `DELETE /project/:id` (soft delete)
+- [x] **6.6** Implement **Admin** `POST /step`
+- [x] **6.7** Implement **Admin** `PUT /step/:id`
+- [x] **6.8** Implement **Admin** `DELETE /step/:id`
+- [x] **6.9** Add request validation (Zod) on all write endpoints
+- [x] **6.10** Verify API with `curl` / Postman collection
 
 ---
 
@@ -217,7 +217,7 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 | 3 — Drag & Drop | ⬜ Not Started | — |
 | 4 — Inline Editing | ⬜ Not Started | — |
 | 5 — Zoom View | ⬜ Not Started | — |
-| 6 — Backend API | ⬜ Not Started | — |
+| 6 — Backend API | ✅ Complete | 2026-04-26 |
 | 7 — Auth | ⬜ Not Started | — |
 | 8 — Integration | ⬜ Not Started | — |
 | 9 — Mobile | ⬜ Not Started | — |
