@@ -78,6 +78,7 @@ jobs:
             cd backend
             npm install
             npm run build
+            mkdir -p data
             if [ ! -f .env ]; then
               echo "PORT=3001" > .env
               echo "NODE_ENV=production" >> .env
