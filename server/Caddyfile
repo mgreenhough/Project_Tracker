@@ -1,0 +1,40 @@
+jocko.ai {
+    tls internal
+    
+    handle /api/* {
+        reverse_proxy localhost:3001
+        header {
+            Access-Control-Allow-Origin https://mgreenhough.github.io
+            Access-Control-Allow-Credentials true
+            Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS,PATCH
+            Access-Control-Allow-Headers Content-Type,Authorization
+        }
+    }
+    
+    handle {
+        root * /opt/coach/static
+        file_server
+        try_files {path} /index.html
+    }
+}
+
+203.57.51.49:443 {
+    tls /etc/caddy/selfsigned.crt /etc/caddy/selfsigned.key
+    reverse_proxy localhost:3001
+    header {
+        Access-Control-Allow-Origin https://mgreenhough.github.io
+        Access-Control-Allow-Credentials true
+        Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS,PATCH
+        Access-Control-Allow-Headers Content-Type,Authorization
+    }
+}
+
+203.57.51.49:80 {
+    reverse_proxy localhost:3001
+    header {
+        Access-Control-Allow-Origin https://mgreenhough.github.io
+        Access-Control-Allow-Credentials true
+        Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS,PATCH
+        Access-Control-Allow-Headers Content-Type,Authorization
+    }
+}

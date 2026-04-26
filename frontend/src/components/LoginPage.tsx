@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://203.57.51.49:443/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://jocko.ai/api'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -39,7 +39,7 @@ export function LoginPage() {
       navigate('/')
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(`Network error: ${err?.message || 'Failed to connect to server'}`)
+      setError(`Network error: ${err?.message || 'Failed to fetch'}`)
       setLoading(false)
     }
   }
