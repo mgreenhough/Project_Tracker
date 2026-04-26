@@ -70,10 +70,26 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            if [ ! -d /opt/project-tracker/.git ]; then
+              rm -rf /opt/project-tracker
+              git clone https://github.com/mgreenhough/Project_Tracker.git /opt/project-tracker
+            fi
             cd /opt/project-tracker
             git pull origin main
+            cd backend
             npm install
             npm run build
-            pm2 restart project-tracker
+            if [ ! -f .env ]; then
+              echo "PORT=3001" > .env
+              echo "NODE_ENV=production" >> .env
+              echo "CORS_ORIGINS=https://mgreenhough.github.io" >> .env
+              echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
+            fi
+            if ! pm2 describe project-tracker > /dev/null 2>&1; then
+              pm2 start dist/server.js --name project-tracker
+              pm2 save
+            else
+              pm2 restart project-tracker
+            fi
             cp server/Caddyfile /etc/caddy/Caddyfile
             systemctl reload caddy
