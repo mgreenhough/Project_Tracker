@@ -29,39 +29,39 @@
 
 ## Phase 1 — Data Layer & Types
 
-- [ ] **1.1** Define TypeScript interfaces: `Project`, `Step`, `StepStatus` (CLEAR | HOLD_POINT | COMPLETE)
-- [ ] **1.2** Create Zustand store skeleton with `projects`, `archivedProjects`, `isAdmin` flags
-- [ ] **1.3** Implement local-storage persistence adapter (fallback until API is live)
-- [ ] **1.4** Add store actions: `addProject`, `updateProject`, `deleteProject`, `archiveProject`, `reorderProjects`
-- [ ] **1.5** Add store actions: `addStep`, `updateStep`, `deleteStep`, `reorderSteps`, `cycleStepStatus`
-- [ ] **1.6** Add computed/selectors: `activeProjectsSorted`, `archivedProjectsSorted`, `urgencyLevel`
-- [ ] **1.7** Verify store state updates correctly in React DevTools
+- [x] **1.1** Define TypeScript interfaces: `Project`, `Step`, `StepStatus` (CLEAR | HOLD_POINT | COMPLETE)
+- [x] **1.2** Create Zustand store skeleton with `projects`, `archivedProjects`, `isAdmin` flags
+- [x] **1.3** Implement local-storage persistence adapter (fallback until API is live)
+- [x] **1.4** Add store actions: `addProject`, `updateProject`, `deleteProject`, `archiveProject`, `reorderProjects`
+- [x] **1.5** Add store actions: `addStep`, `updateStep`, `deleteStep`, `reorderSteps`, `cycleStepStatus`
+- [x] **1.6** Add computed/selectors: `activeProjectsSorted`, `archivedProjectsSorted`, `urgencyLevel`
+- [x] **1.7** Verify store state updates correctly in React DevTools
 
 ---
 
 ## Phase 2 — Core UI Components (Static)
 
-- [ ] **2.1** Create `ProjectCard` component with title, due-date display, and step list
-- [ ] **2.2** Create `StepItem` component with tri-state checkbox (CLEAR → HOLD_POINT → COMPLETE)
-- [ ] **2.3** Create `DueDateBadge` component with 3-stage colouring (red ≤7d, orange ≤14d, white >14d)
-- [ ] **2.4** Create `ProjectStack` container for horizontal card layout (desktop)
-- [ ] **2.5** Create `ArchivedRow` container for completed projects below active stack
-- [ ] **2.6** Apply subdued colour treatment to archived cards (greyed/dimmed)
-- [ ] **2.7** Apply dark-theme neon colour tokens via Tailwind arbitrary values / CSS variables
-- [ ] **2.8** Verify all components render correctly with mock data (no drag yet)
+- [x] **2.1** Create `ProjectCard` component with title, due-date display, and step list
+- [x] **2.2** Create `StepItem` component with tri-state checkbox (CLEAR → HOLD_POINT → COMPLETE)
+- [x] **2.3** Create `DueDateBadge` component with 3-stage colouring (red ≤7d, orange ≤14d, white >14d)
+- [x] **2.4** Create `ProjectStack` container for horizontal card layout (desktop)
+- [x] **2.5** Create `ArchivedRow` container for completed projects below active stack
+- [x] **2.6** Apply subdued colour treatment to archived cards (greyed/dimmed)
+- [x] **2.7** Apply dark-theme neon colour tokens via Tailwind arbitrary values / CSS variables
+- [x] **2.8** Verify all components render correctly with mock data (no drag yet)
 
 ---
 
 ## Phase 3 — Drag-and-Drop System
 
-- [ ] **3.1** Wrap `ProjectStack` with `@dnd-kit/core` `DndContext`
-- [ ] **3.2** Make `ProjectCard` a `@dnd-kit/sortable` item with drag handle (`[≡]`)
-- [ ] **3.3** Implement `onDragEnd` handler to update `priority_index` in Zustand store
-- [ ] **3.4** Add subtle CSS transition for drag overlay (fast, <150ms)
-- [ ] **3.5** Implement step-level drag-and-drop reordering within a project card
-- [ ] **3.6** Test mouse drag on desktop (Chrome, Firefox, Edge)
-- [ ] **3.7** Test touch drag on mobile (iOS Safari, Android Chrome)
-- [ ] **3.8** Ensure drag handles meet minimum 44×44dp touch target
+- [x] **3.1** Wrap `ProjectStack` with `@dnd-kit/core` `DndContext`
+- [x] **3.2** Make `ProjectCard` a `@dnd-kit/sortable` item with drag handle (`[≡]`)
+- [x] **3.3** Implement `onDragEnd` handler to update `priority_index` in Zustand store
+- [x] **3.4** Add subtle CSS transition for drag overlay (fast, <150ms)
+- [x] **3.5** Implement step-level drag-and-drop reordering within a project card
+- [x] **3.6** Test mouse drag on desktop (Chrome, Firefox, Edge)
+- [x] **3.7** Test touch drag on mobile (iOS Safari, Android Chrome)
+- [x] **3.8** Ensure drag handles meet minimum 44×44dp touch target
 
 ---
 

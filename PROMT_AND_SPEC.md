@@ -1,16 +1,3 @@
-
-
-
-
-
-Current line revision progress: 220
-
-
-
-
-
-
-
 # Priority Stack Project Tracker — Full Product & Architecture Specification
 
 ## Overview
