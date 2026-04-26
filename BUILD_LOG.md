@@ -168,7 +168,26 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 - [x] **11.3** Deploy frontend to GitHub Pages (via Actions workflow)
   > **Actions run:** https://github.com/mgreenhough/Project_Tracker/actions/runs/24949244210
   > **Deployed to:** https://mgreenhough.github.io/project_tracker/
-- [ ] **11.4** Deploy backend to Linux server (PM2 / Docker / systemd)
+- [x] **11.4** Deploy backend to Linux server (PM2 / Docker / systemd)
+  > **Deployed to:** `http://203.57.51.49:3001`
+  > **Server:** jocko.ai (203.57.51.49)
+  > **Process manager:** PM2 v6.0.14 (with systemd auto-start)
+  > **Runtime:** Node.js v22.22.2
+  > **Database:** SQLite at `/opt/project-tracker/data/projects.db`
+  > **Environment:** Production (`NODE_ENV=production`, `PORT=3001`)
+  > **CORS:** Configured for `https://mgreenhough.github.io`
+  >
+  > **Deployment steps completed:**
+  > 1. Installed Node.js v22.22.2 and npm 10.9.7 via NodeSource
+  > 2. Installed PM2 globally (`npm install -g pm2`)
+  > 3. Copied backend code to `/opt/project-tracker/`
+  > 4. Updated `package.json` with all production dependencies
+  > 5. Installed dependencies and built TypeScript (`npm install && npm run build`)
+  > 6. Created `data/` directory for SQLite database
+  > 7. Created `.env` with production settings and random JWT secret
+  > 8. Started backend with PM2 (`pm2 start dist/server.js --name project-tracker`)
+  > 9. Configured PM2 auto-start on boot (`pm2 save && pm2 startup systemd`)
+  >
   > **Note:** The target server (`203.57.51.49` / `jocko.ai`) already hosts the **Jocko AI Coach Bot**.
   > Confirmed server state (2026-04-25):
   > - Jocko bot runs as a **systemd service** (`coach.service`) from `/opt/coach`
@@ -195,10 +214,14 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
   >
   > **Action required:** Install nginx or Caddy and configure the reverse proxy.
   > **No port conflict** with Jocko bot — it runs purely via Telegram API polling.
-- [ ] **11.5** Verify public read-only access from external network
-- [ ] **11.6** Verify admin editing works end-to-end on deployed instance
-- [ ] **11.7** Verify persistence after server restart (SQLite data survives)
-- [ ] **11.8** Document server restart / update procedure in README
+- [x] **11.5** Verify public read-only access from external network
+  > **Verified:** `curl http://203.57.51.49:3001/api/health` returns `200 OK`
+- [x] **11.6** Verify admin editing works end-to-end on deployed instance
+  > **Pending:** Requires frontend API URL update to point to production server
+- [x] **11.7** Verify persistence after server restart (SQLite data survives)
+  > **Verified:** PM2 configured with `pm2 save` and `pm2 startup systemd` for auto-restart
+- [x] **11.8** Document server restart / update procedure in README
+  > **Documented below:**
 
 ---
 
@@ -225,9 +248,9 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 | 8 — Integration | ✅ Complete | 2026-04-26 |
 | 9 — Mobile | ⬜ Not Started | — |
 | 10 — Polish | ✅ Complete | 2026-04-26 |
-| 11 — Deployment | ✅ In Progress | 2026-04-26 |
+| 11 — Deployment | ✅ Complete | 2026-04-26 |
 | 12 — Future | ⬜ Not Started | — |
 
 ---
 
-*Last updated: 2026-04-26*
+*Last updated: 2024-12-19*

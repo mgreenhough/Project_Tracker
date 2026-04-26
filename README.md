@@ -60,6 +60,44 @@ npm run dev
 - **Frontend**: Auto-deploys to GitHub Pages via Actions on push to `main`
 - **Backend**: Deployed to `203.57.51.49` (port `3001`) behind nginx/Caddy reverse proxy
 
+---
+
+### Server Update Procedure
+
+```bash
+# SSH into server
+ssh root@203.57.51.49
+
+# Stop the backend
+pm2 stop project-tracker
+
+# Pull latest code (or SCP from local)
+cd /opt/project-tracker
+git pull  # if using git, or scp new files
+
+# Rebuild
+npm install
+npm run build
+
+# Restart
+pm2 start project-tracker
+pm2 save
+```
+
+### PM2 Commands Reference
+
+```bash
+pm2 status              # Check process status
+pm2 logs project-tracker # View logs
+pm2 restart project-tracker  # Restart
+pm2 stop project-tracker     # Stop
+pm2 delete project-tracker   # Remove from PM2
+pm2 save                 # Save current process list
+pm2 startup systemd      # Configure auto-start
+```
+
+---
+
 ## License
 
 MIT
