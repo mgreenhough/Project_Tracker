@@ -133,16 +133,16 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ---
 
-## Phase 9 — Mobile Optimisation
+## Phase 9 — Mobile Optimisation (Partial — Awaiting Device Testing)
 
-- [ ] **9.1** Implement rotatable view toggle (portrait ↔ landscape stack)
-- [ ] **9.2** Ensure horizontal scroll is thumb-friendly (no tiny scrollbars)
-- [ ] **9.3** Test inline editing on 375px wide viewport (iPhone SE)
-- [ ] **9.4** Improve inline editing usability on mobile (larger tap targets, zoom prevention)
-- [ ] **9.5** Remove all hover-dependent interactions (`:hover` CSS replaced with tap states)
-- [ ] **9.6** Verify drag handles are visible and usable on mobile
-- [ ] **9.7** Test on actual device or BrowserStack (iOS Safari + Android Chrome)
-- [ ] **9.8** Test Android-specific behaviours (back button handling, keyboard resize, overscroll glow)
+- [x] **9.1** Implement rotatable view toggle (portrait ↔ landscape stack)
+- [x] **9.2** Ensure horizontal scroll is thumb-friendly (no tiny scrollbars)
+- [ ] **9.3** Test inline editing on 375px wide viewport (iPhone SE) — _requires physical device_
+- [x] **9.4** Improve inline editing usability on mobile (larger tap targets, zoom prevention)
+- [x] **9.5** Remove all hover-dependent interactions (`:hover` CSS replaced with tap states)
+- [x] **9.6** Verify drag handles are visible and usable on mobile
+- [ ] **9.7** Test on actual device or BrowserStack (iOS Safari + Android Chrome) — _requires physical device_
+- [ ] **9.8** Test Android-specific behaviours (back button handling, keyboard resize, overscroll glow) — _requires physical device_
 
 ---
 

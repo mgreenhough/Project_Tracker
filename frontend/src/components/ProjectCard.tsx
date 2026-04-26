@@ -161,7 +161,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
         ${
           isArchived
             ? 'bg-gray-900/40 border-gray-800 opacity-60 grayscale-[0.3]'
-            : 'bg-gray-900/80 border-gray-700 hover:border-gray-600'
+            : 'bg-gray-900/80 border-gray-700'
         }
       `}
     >
@@ -169,7 +169,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
         {isAdmin && dragHandleProps && (
           <button
             type="button"
-            className="cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-300 text-lg select-none w-11 h-11 flex items-center justify-center rounded hover:bg-white/5 transition-colors touch-manipulation"
+            className="cursor-grab active:cursor-grabbing text-gray-500 active:text-gray-300 text-lg select-none w-11 h-11 flex items-center justify-center rounded active:bg-white/5 transition-colors touch-manipulation"
             {...dragHandleProps.attributes}
             {...dragHandleProps.listeners}
             aria-label="Drag to reorder project"
@@ -194,7 +194,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           <h3
             className={`font-semibold truncate flex-1 cursor-pointer select-none ${
               isArchived ? 'text-gray-400' : 'text-white'
-            } ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+            } ${isAdmin ? 'active:text-neon-blue' : ''}`}
             onClick={() => isAdmin && setEditingTitle(true)}
           >
             {project.title}
@@ -221,7 +221,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
         />
       ) : (
         <span
-          className={`w-fit cursor-pointer ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          className={`w-fit cursor-pointer ${isAdmin ? 'active:text-neon-blue' : ''}`}
           onClick={() => isAdmin && setEditingDate(true)}
         >
           <DueDateBadge dueDate={project.dueDate} />
@@ -253,7 +253,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           <button
             type="button"
             onClick={handleAddStep}
-            className="text-xs text-gray-500 hover:text-neon-green transition-colors px-2 py-1 rounded hover:bg-white/5"
+            className="text-xs text-gray-500 active:text-neon-green transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
             title="Add step"
           >
             + Step
@@ -261,7 +261,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           <button
             type="button"
             onClick={() => archiveProject(project.id)}
-            className="text-xs text-gray-500 hover:text-neon-orange transition-colors px-2 py-1 rounded hover:bg-white/5"
+            className="text-xs text-gray-500 active:text-neon-orange transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
             title="Archive project"
           >
             Archive
@@ -269,7 +269,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
           <button
             type="button"
             onClick={() => deleteProject(project.id)}
-            className="text-xs text-gray-500 hover:text-neon-red transition-colors px-2 py-1 rounded hover:bg-white/5 ml-auto"
+            className="text-xs text-gray-500 active:text-neon-red transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active"
             title="Delete project"
           >
             ×

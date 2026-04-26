@@ -35,7 +35,7 @@ function MainLayout() {
             <>
               <span className="text-xs text-emerald-400 border border-emerald-400/30 px-2 py-1 rounded">Admin</span>
               <button
-                className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium hover:bg-neon-blue/30 transition-colors"
+                className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium active:bg-neon-blue/30 transition-colors tap-active"
                 onClick={() =>
                   addProject({
                     title: 'New Project',
@@ -50,7 +50,7 @@ function MainLayout() {
               </button>
               <button
                 onClick={logout}
-                className="px-3 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                className="px-3 py-2 text-xs text-gray-400 active:text-white transition-colors tap-active"
               >
                 Logout
               </button>
@@ -58,7 +58,7 @@ function MainLayout() {
           ) : (
             <Link
               to="/login"
-              className="px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg text-sm font-medium active:bg-gray-700 transition-colors tap-active"
             >
               Login
             </Link>

@@ -141,7 +141,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       {isAdmin && (
         <button
           type="button"
-          className="cursor-grab active:cursor-grabbing text-gray-600 hover:text-gray-400 text-xs select-none w-6 h-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors touch-manipulation"
+          className="cursor-grab active:cursor-grabbing text-gray-600 active:text-gray-400 text-xs select-none w-8 h-10 flex items-center justify-center rounded active:bg-white/5 transition-colors touch-manipulation"
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder step"
@@ -150,7 +150,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
         </button>
       )}
       <button
-        className="w-8 h-8 flex items-center justify-center text-lg select-none rounded hover:bg-white/5 transition-colors shrink-0"
+        className="w-10 h-10 flex items-center justify-center text-lg select-none rounded active:bg-white/5 transition-colors shrink-0"
         onClick={() => isAdmin && cycleStepStatus(step.projectId, step.id)}
         disabled={!isAdmin}
         title={config.label}
@@ -176,7 +176,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
         <span
           className={`flex-1 truncate cursor-pointer ${
             step.status === 'COMPLETE' ? 'line-through opacity-40' : 'text-gray-200'
-          } ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          } ${isAdmin ? 'active:text-neon-blue' : ''}`}
           onClick={() => isAdmin && setEditingContent(true)}
         >
           {step.content}
@@ -202,7 +202,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
         />
       ) : (
         <span
-          className={`cursor-pointer ${isAdmin ? 'hover:text-neon-blue' : ''}`}
+          className={`cursor-pointer ${isAdmin ? 'active:text-neon-blue' : ''}`}
           onClick={() => isAdmin && setEditingDate(true)}
         >
           <DueDateBadge dueDate={step.dueDate} label="" />
@@ -213,7 +213,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
         <button
           type="button"
           onClick={() => deleteStep(step.projectId, step.id)}
-          className="text-gray-600 hover:text-neon-red transition-colors w-6 h-6 flex items-center justify-center rounded hover:bg-white/5"
+          className="text-gray-600 active:text-neon-red transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active"
           title="Delete step"
           aria-label="Delete step"
         >

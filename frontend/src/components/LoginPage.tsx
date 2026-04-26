@@ -83,7 +83,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium hover:bg-neon-blue/30 transition-colors disabled:opacity-50"
+            className="w-full px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium active:bg-neon-blue/30 transition-colors disabled:opacity-50"
           >
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
@@ -91,7 +91,7 @@ export function LoginPage() {
 
         <button
           onClick={() => navigate('/')}
-          className="w-full mt-4 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+          className="w-full mt-4 text-xs text-gray-500 active:text-gray-300 transition-colors tap-active"
         >
           ← Back to public view
         </button>

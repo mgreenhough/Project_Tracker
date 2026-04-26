@@ -177,7 +177,7 @@ export function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps
         >
           <div
             ref={containerRef}
-            className="flex overflow-x-auto pb-4 scrollbar-thin"
+            className="flex overflow-x-auto pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px]"
             style={{ paddingLeft: 0 }}
           >
             {projects.map((project, index) => (
