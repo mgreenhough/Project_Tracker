@@ -15,7 +15,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { memo, useState, useRef, useCallback, useEffect } from 'react'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '../types'
 
@@ -25,18 +25,20 @@ interface ProjectStackProps {
   onReorder: (orderedIds: string[]) => void
 }
 
-function SortableProjectCard({
+const SortableProjectCard = memo(function SortableProjectCard({
   project,
   isAdmin,
   overlap,
   index,
   total,
+  style: extraStyle,
 }: {
   project: Project
   isAdmin: boolean
   overlap: number
   index: number
   total: number
+  style?: React.CSSProperties
 }) {
   const {
     attributes,
@@ -53,10 +55,11 @@ function SortableProjectCard({
     marginLeft: index === 0 ? 0 : -overlap,
     marginTop: index * 24,
     zIndex: isDragging ? 100 : total - index,
+    ...extraStyle,
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="relative flex-shrink-0">
+    <div ref={setNodeRef} style={style} className="relative flex-shrink-0 animate-fade-in-up">
       <ProjectCard
         project={project}
         isAdmin={isAdmin}
@@ -65,9 +68,9 @@ function SortableProjectCard({
       />
     </div>
   )
-}
+})
 
-export function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps) {
+export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps) {
   const [zoom, setZoom] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
@@ -140,7 +143,7 @@ export function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps
     })
   )
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
 
     if (over && active.id !== over.id) {
@@ -149,7 +152,7 @@ export function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps
       const reordered = arrayMove(projects, oldIndex, newIndex)
       onReorder(reordered.map((p) => p.id))
     }
-  }
+  }, [projects, onReorder])
 
   return (
     <div className="relative">
@@ -188,14 +191,21 @@ export function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps
                 overlap={overlap}
                 index={index}
                 total={projects.length}
+                style={{ animationDelay: `${index * 40}ms` }}
               />
             ))}
             {projects.length === 0 && (
-              <div className="text-gray-500 italic py-8">No active projects.</div>
+              <div className="flex flex-col items-center justify-center gap-3 py-12 text-gray-500 w-full">
+                <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span className="text-sm italic">No active projects.</span>
+                <span className="text-xs text-gray-600">Create a project to get started.</span>
+              </div>
             )}
           </div>
         </SortableContext>
       </DndContext>
     </div>
   )
-}
+})

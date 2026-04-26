@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { memo, useState, useRef, useEffect, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectStore } from '../store/useProjectStore'
@@ -39,7 +39,7 @@ function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number)
   )
 }
 
-export function StepItem({ step, isAdmin }: StepItemProps) {
+export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps) {
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
   const deleteStep = useProjectStore((s) => s.deleteStep)
@@ -75,25 +75,25 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
     }
   }, [editingContent])
 
-  const handleContentConfirm = () => {
+  const handleContentConfirm = useCallback(() => {
     setEditingContent(false)
     updateStep(step.projectId, step.id, { content: contentValue.trim() || step.content })
-  }
+  }, [step.projectId, step.id, step.content, contentValue, updateStep])
 
-  const handleContentCancel = () => {
+  const handleContentCancel = useCallback(() => {
     setEditingContent(false)
     setContentValue(step.content)
-  }
+  }, [step.content])
 
-  const handleContentKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleContentKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleContentConfirm()
     } else if (e.key === 'Escape') {
       handleContentCancel()
     }
-  }
+  }, [handleContentConfirm, handleContentCancel])
 
-  const handleDateConfirm = () => {
+  const handleDateConfirm = useCallback(() => {
     setEditingDate(false)
     const trimmed = dateValue.trim()
     const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
@@ -102,20 +102,50 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
     } else {
       setDateValue(step.dueDate || '')
     }
-  }
+  }, [step.projectId, step.id, step.dueDate, dateValue, updateStep])
 
-  const handleDateCancel = () => {
+  const handleDateCancel = useCallback(() => {
     setEditingDate(false)
     setDateValue(step.dueDate || '')
-  }
+  }, [step.dueDate])
 
-  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleDateKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleDateConfirm()
     } else if (e.key === 'Escape') {
       handleDateCancel()
     }
-  }
+  }, [handleDateConfirm, handleDateCancel])
+
+  const handleStatusClick = useCallback(() => {
+    if (isAdmin) cycleStepStatus(step.projectId, step.id)
+  }, [isAdmin, cycleStepStatus, step.projectId, step.id])
+
+  const handleContentInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setContentValue(e.target.value)
+    debouncedUpdateContent(step.projectId, step.id, e.target.value)
+  }, [step.projectId, step.id, debouncedUpdateContent])
+
+  const handleContentSpanClick = useCallback(() => {
+    if (isAdmin) setEditingContent(true)
+  }, [isAdmin])
+
+  const handleDateInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateValue(e.target.value)
+    const trimmed = e.target.value.trim()
+    const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
+    if (trimmed === '' || ddmmyy.test(trimmed)) {
+      debouncedUpdateDate(step.projectId, step.id, trimmed || null)
+    }
+  }, [step.projectId, step.id, debouncedUpdateDate])
+
+  const handleDateSpanClick = useCallback(() => {
+    if (isAdmin) setEditingDate(true)
+  }, [isAdmin])
+
+  const handleDeleteClick = useCallback(() => {
+    deleteStep(step.projectId, step.id)
+  }, [deleteStep, step.projectId, step.id])
 
   const {
     attributes,
@@ -136,7 +166,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 text-sm group"
+      className="flex items-center gap-2 text-sm group animate-fade-in"
     >
       {isAdmin && (
         <button
@@ -151,7 +181,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       )}
       <button
         className="w-10 h-10 flex items-center justify-center text-lg select-none rounded active:bg-white/5 transition-colors shrink-0"
-        onClick={() => isAdmin && cycleStepStatus(step.projectId, step.id)}
+        onClick={handleStatusClick}
         disabled={!isAdmin}
         title={config.label}
         aria-label={`Step status: ${config.label}`}
@@ -164,10 +194,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
           ref={contentInputRef}
           type="text"
           value={contentValue}
-          onChange={(e) => {
-            setContentValue(e.target.value)
-            debouncedUpdateContent(step.projectId, step.id, e.target.value)
-          }}
+          onChange={handleContentInputChange}
           onBlur={handleContentConfirm}
           onKeyDown={handleContentKeyDown}
           className="flex-1 bg-transparent border-b border-neon-blue text-gray-200 outline-none min-w-0"
@@ -177,7 +204,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
           className={`flex-1 truncate cursor-pointer ${
             step.status === 'COMPLETE' ? 'line-through opacity-40' : 'text-gray-200'
           } ${isAdmin ? 'active:text-neon-blue' : ''}`}
-          onClick={() => isAdmin && setEditingContent(true)}
+          onClick={handleContentSpanClick}
         >
           {step.content}
         </span>
@@ -187,14 +214,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
         <input
           type="text"
           value={dateValue}
-          onChange={(e) => {
-            setDateValue(e.target.value)
-            const trimmed = e.target.value.trim()
-            const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
-            if (trimmed === '' || ddmmyy.test(trimmed)) {
-              debouncedUpdateDate(step.projectId, step.id, trimmed || null)
-            }
-          }}
+          onChange={handleDateInputChange}
           onBlur={handleDateConfirm}
           onKeyDown={handleDateKeyDown}
           placeholder="dd/mm/yy"
@@ -203,7 +223,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       ) : (
         <span
           className={`cursor-pointer ${isAdmin ? 'active:text-neon-blue' : ''}`}
-          onClick={() => isAdmin && setEditingDate(true)}
+          onClick={handleDateSpanClick}
         >
           <DueDateBadge dueDate={step.dueDate} label="" />
         </span>
@@ -212,7 +232,7 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       {isAdmin && (
         <button
           type="button"
-          onClick={() => deleteStep(step.projectId, step.id)}
+          onClick={handleDeleteClick}
           className="text-gray-600 active:text-neon-red transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active"
           title="Delete step"
           aria-label="Delete step"
@@ -222,4 +242,4 @@ export function StepItem({ step, isAdmin }: StepItemProps) {
       )}
     </div>
   )
-}
+})

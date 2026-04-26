@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { memo, useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -42,13 +42,13 @@ function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number)
   )
 }
 
-export function ProjectCard({ project, isAdmin, isArchived = false, dragHandleProps }: ProjectCardProps) {
+export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchived = false, dragHandleProps }: ProjectCardProps) {
   const reorderSteps = useProjectStore((s) => s.reorderSteps)
   const updateProject = useProjectStore((s) => s.updateProject)
   const addStep = useProjectStore((s) => s.addStep)
   const archiveProject = useProjectStore((s) => s.archiveProject)
   const deleteProject = useProjectStore((s) => s.deleteProject)
-  const steps = [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder)
+  const steps = useMemo(() => [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder), [project.steps])
 
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(project.title)
@@ -80,25 +80,25 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
     }
   }, [editingTitle])
 
-  const handleTitleConfirm = () => {
+  const handleTitleConfirm = useCallback(() => {
     setEditingTitle(false)
     updateProject(project.id, { title: titleValue.trim() || project.title })
-  }
+  }, [project.id, project.title, titleValue, updateProject])
 
-  const handleTitleCancel = () => {
+  const handleTitleCancel = useCallback(() => {
     setEditingTitle(false)
     setTitleValue(project.title)
-  }
+  }, [project.title])
 
-  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleTitleConfirm()
     } else if (e.key === 'Escape') {
       handleTitleCancel()
     }
-  }
+  }, [handleTitleConfirm, handleTitleCancel])
 
-  const handleDateConfirm = () => {
+  const handleDateConfirm = useCallback(() => {
     setEditingDate(false)
     const trimmed = dateValue.trim()
     const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
@@ -107,22 +107,22 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
     } else {
       setDateValue(project.dueDate || '')
     }
-  }
+  }, [project.id, project.dueDate, dateValue, updateProject])
 
-  const handleDateCancel = () => {
+  const handleDateCancel = useCallback(() => {
     setEditingDate(false)
     setDateValue(project.dueDate || '')
-  }
+  }, [project.dueDate])
 
-  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleDateKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleDateConfirm()
     } else if (e.key === 'Escape') {
       handleDateCancel()
     }
-  }
+  }, [handleDateConfirm, handleDateCancel])
 
-  const handleAddStep = () => {
+  const handleAddStep = useCallback(() => {
     const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.stepOrder)) + 1 : 0
     addStep(project.id, {
       content: 'New step',
@@ -130,7 +130,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
       stepOrder: nextOrder,
       dueDate: null,
     })
-  }
+  }, [project.id, steps, addStep])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -143,7 +143,7 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
     })
   )
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (over && active.id !== over.id) {
       const oldIndex = steps.findIndex((s) => s.id === active.id)
@@ -151,13 +151,13 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
       const reordered = arrayMove(steps, oldIndex, newIndex)
       reorderSteps(project.id, reordered.map((s) => s.id))
     }
-  }
+  }, [steps, project.id, reorderSteps])
 
   return (
     <div
       className={`
         relative w-[320px] rounded-xl p-4 flex flex-col gap-3
-        border transition-all duration-200
+        border transition-all duration-200 animate-fade-in
         ${
           isArchived
             ? 'bg-gray-900/40 border-gray-800 opacity-60 grayscale-[0.3]'
@@ -278,4 +278,4 @@ export function ProjectCard({ project, isAdmin, isArchived = false, dragHandlePr
       )}
     </div>
   )
-}
+})

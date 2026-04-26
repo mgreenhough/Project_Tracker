@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '../types'
 
@@ -6,7 +7,7 @@ interface ArchivedRowProps {
   isAdmin: boolean
 }
 
-export function ArchivedRow({ projects, isAdmin }: ArchivedRowProps) {
+export const ArchivedRow = memo(function ArchivedRow({ projects, isAdmin }: ArchivedRowProps) {
   if (projects.length === 0) return null
 
   return (
@@ -14,16 +15,17 @@ export function ArchivedRow({ projects, isAdmin }: ArchivedRowProps) {
       <h2 className="text-xl font-bold mb-4 text-gray-500 tracking-wide uppercase text-sm">
         Completed
       </h2>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin min-h-[180px]">
         {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            isAdmin={isAdmin}
-            isArchived={true}
-          />
+          <div key={project.id} className="animate-fade-in">
+            <ProjectCard
+              project={project}
+              isAdmin={isAdmin}
+              isArchived={true}
+            />
+          </div>
         ))}
       </div>
     </div>
   )
-}
+})
