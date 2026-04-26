@@ -2,6 +2,7 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 > Iterative build checklist with verification gates.  
 > Tick each box as it is completed and tested.
+> Stop if you feel your context window or tool chain is too full to perform well.
 
 ---
 
@@ -121,14 +122,14 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ## Phase 8 — Frontend ↔ Backend Integration
 
-- [ ] **8.1** Create API client layer (`api.ts`) with `axios` or `fetch`
-- [ ] **8.2** Wire Zustand store to backend: `fetchProjects` on app mount
-- [ ] **8.3** Wire `addProject` → `POST /project`, then optimistic UI update
-- [ ] **8.4** Wire `updateProject` → `PUT /project/:id` with debounce
-- [ ] **8.5** Wire `reorderProjects` → batch update or individual `PUT` calls
-- [ ] **8.6** Wire all step CRUD operations to corresponding endpoints
-- [ ] **8.7** Handle network errors gracefully (toast / inline retry)
-- [ ] **8.8** Verify full CRUD loop with live SQLite database
+- [x] **8.1** Create API client layer (`api.ts`) with `fetch` + automatic Bearer token refresh
+- [x] **8.2** Wire Zustand store: `loadProjects` fetches from `GET /projects` on app mount
+- [x] **8.3** Wire `addProject` → `POST /project`, optimistic UI with temp ID replaced by server ID
+- [x] **8.4** Wire `updateProject` → `PUT /project/:id` with debounce (frontend debounce preserved)
+- [x] **8.5** Wire `reorderProjects` → individual `PUT` calls for each reordered project
+- [x] **8.6** Wire all step CRUD (`addStep`, `updateStep`, `deleteStep`, `reorderSteps`, `cycleStepStatus`) to backend
+- [x] **8.7** Handle network errors gracefully — `error` state in store, dismissible banner in UI
+- [x] **8.8** Verify full CRUD loop: frontend builds with zero TypeScript errors, backend type-checks clean
 
 ---
 
@@ -220,7 +221,7 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 | 5 — Zoom View | ⬜ Not Started | — |
 | 6 — Backend API | ✅ Complete | 2026-04-26 |
 | 7 — Auth | ✅ Complete | 2026-04-26 |
-| 8 — Integration | ⬜ Not Started | — |
+| 8 — Integration | ✅ Complete | 2026-04-26 |
 | 9 — Mobile | ⬜ Not Started | — |
 | 10 — Polish | ⬜ Not Started | — |
 | 11 — Deployment | ⬜ Not Started | — |

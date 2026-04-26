@@ -49,15 +49,17 @@ function rowToStep(row: any) {
   };
 }
 
-// Public GET /projects — returns non-archived, non-deleted public projects with steps
+// Public GET /projects — returns all non-deleted public projects with steps
 router.get('/', (_req, res) => {
   const projectRows = db.prepare(
-    `SELECT * FROM projects WHERE is_archived = 0 AND is_deleted = 0 AND is_public = 1 ORDER BY priority_index ASC`
+    `SELECT * FROM projects WHERE is_deleted = 0 AND is_public = 1 ORDER BY priority_index ASC`
   ).all();
 
-  const stepRows = db.prepare(
-    `SELECT * FROM steps WHERE project_id IN (${projectRows.map(() => '?').join(',')}) ORDER BY step_order ASC`
-  ).all(projectRows.map((r: any) => r.id));
+  const stepRows = projectRows.length > 0
+    ? db.prepare(
+        `SELECT * FROM steps WHERE project_id IN (${projectRows.map(() => '?').join(',')}) ORDER BY step_order ASC`
+      ).all(projectRows.map((r: any) => r.id))
+    : [];
 
   const projects = projectRows.map(rowToProject);
   const stepsByProject = new Map<string, any[]>();

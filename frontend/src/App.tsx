@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useProjectStore } from './store/useProjectStore'
 import { activeProjectsSorted, archivedProjectsSorted } from './store/selectors'
@@ -8,9 +9,17 @@ import { LoginPage } from './components/LoginPage'
 
 function MainLayout() {
   const projects = useProjectStore((s) => s.projects)
+  const isLoading = useProjectStore((s) => s.isLoading)
+  const error = useProjectStore((s) => s.error)
   const addProject = useProjectStore((s) => s.addProject)
   const reorderProjects = useProjectStore((s) => s.reorderProjects)
-  const { isAdmin, logout, isLoading } = useAuth()
+  const loadProjects = useProjectStore((s) => s.loadProjects)
+  const setError = useProjectStore((s) => s.setError)
+  const { isAdmin, logout, isLoading: authLoading } = useAuth()
+
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
 
   const active = activeProjectsSorted(projects)
   const archived = archivedProjectsSorted(projects)
@@ -20,7 +29,7 @@ function MainLayout() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Project Stack</h1>
         <div className="flex items-center gap-3">
-          {isLoading ? (
+          {authLoading ? (
             <span className="text-xs text-gray-500">Loading…</span>
           ) : isAdmin ? (
             <>
@@ -33,7 +42,6 @@ function MainLayout() {
                     description: null,
                     isPublic: true,
                     isArchived: false,
-                    isDeleted: false,
                     dueDate: null,
                   })
                 }
@@ -57,6 +65,22 @@ function MainLayout() {
           )}
         </div>
       </div>
+
+      {isLoading && projects.length === 0 && (
+        <div className="text-sm text-gray-500 py-8">Loading projects…</div>
+      )}
+
+      {error && (
+        <div className="mb-4 flex items-center gap-3 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="text-gray-400 hover:text-white ml-auto"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       <ProjectStack projects={active} isAdmin={isAdmin} onReorder={reorderProjects} />
       <ArchivedRow projects={archived} isAdmin={isAdmin} />
