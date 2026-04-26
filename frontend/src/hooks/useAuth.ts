@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useProjectStore } from '../store/useProjectStore'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://jocko.ai/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://203.57.51.49:443/api'
 
 interface TokenPayload {
   exp: number
