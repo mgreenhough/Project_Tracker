@@ -84,11 +84,10 @@ jobs:
               echo "CORS_ORIGINS=https://mgreenhough.github.io" >> .env
               echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
             fi
-            if ! pm2 describe project-tracker > /dev/null 2>&1; then
-              pm2 start dist/server.js --name project-tracker
-              pm2 save
-            else
-              pm2 restart project-tracker
+            if pm2 describe project-tracker > /dev/null 2>&1; then
+              pm2 delete project-tracker
             fi
+            pm2 start dist/server.js --name project-tracker
+            pm2 save
             cp server/Caddyfile /etc/caddy/Caddyfile
             systemctl reload caddy
