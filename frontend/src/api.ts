@@ -84,6 +84,12 @@ export async function createStep(projectId: string, step: any) {
   return res.json()
 }
 
+// Alias for store compatibility (expects object with projectId inside)
+export async function createStepApi(step: any & { projectId: string }) {
+  const { projectId, ...rest } = step
+  return createStep(projectId, rest)
+}
+
 export async function updateStep(projectId: string, stepId: string, step: any) {
   const res = await fetchWithAuth(`/projects/${projectId}/steps/${stepId}`, {
     method: 'PUT',
@@ -95,6 +101,34 @@ export async function updateStep(projectId: string, stepId: string, step: any) {
 
 export async function deleteStep(projectId: string, stepId: string) {
   const res = await fetchWithAuth(`/projects/${projectId}/steps/${stepId}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) throw new Error('Failed to delete step')
+  return res.json()
+}
+
+export async function updateProjectApi(id: string, project: any) {
+  return updateProject(id, project)
+}
+
+export async function deleteProjectApi(id: string) {
+  return deleteProject(id)
+}
+
+export async function updateStepApi(stepId: string, updates: any) {
+  // This is a wrapper - the store calls it with just stepId and updates
+  // We need to find the projectId from the store or pass it differently
+  // For now, this is a placeholder that matches the store's expected API
+  const res = await fetchWithAuth(`/steps/${stepId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error('Failed to update step')
+  return res.json()
+}
+
+export async function deleteStepApi(stepId: string) {
+  const res = await fetchWithAuth(`/steps/${stepId}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete step')

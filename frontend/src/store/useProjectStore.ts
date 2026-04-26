@@ -7,7 +7,7 @@ import {
   createProject,
   updateProjectApi,
   deleteProjectApi,
-  createStep,
+  createStepApi,
   updateStepApi,
   deleteStepApi,
 } from '../api'
@@ -191,7 +191,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           try {
-            const data = await createStep({
+            const data = await createStepApi({
               projectId,
               content: newStep.content,
               stepOrder: newStep.stepOrder,
