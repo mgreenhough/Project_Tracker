@@ -107,14 +107,15 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ## Phase 7 — Authentication
 
-- [ ] **7.1** Implement admin login page (`/login`) with email/password form
-- [ ] **7.2** Implement JWT generation on successful login (access token + refresh token)
-- [ ] **7.3** Store tokens in `httpOnly` cookies or secure localStorage (choose one, document it)
-- [ ] **7.4** Create `AuthGuard` component / hook to protect admin routes
-- [ ] **7.5** Add session persistence: token auto-refresh on expiry
-- [ ] **7.6** Implement logout action (clear tokens, reset store)
-- [ ] **7.7** Ensure public routes (`/`) work without any auth
-- [ ] **7.8** Verify admin endpoints return `401/403` for unauthenticated requests
+- [x] **7.1** Implement admin login page (`/login`) with email/password form
+- [x] **7.2** Implement JWT generation on successful login (access token + refresh token)
+- [x] **7.3** Store tokens in `httpOnly` cookies or secure localStorage (choose one, document it)
+- [x] **7.4** Create `AuthGuard` component / hook to protect admin routes
+- [x] **7.5** Add session persistence: token auto-refresh on expiry
+- [x] **7.6** Implement logout action (clear tokens, reset store)
+- [x] **7.7** Ensure public routes (`/`) work without any auth
+- [x] **7.8** Verify admin endpoints return `401/403` for unauthenticated requests
+
 
 ---
 
@@ -218,7 +219,7 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 | 4 — Inline Editing | ⬜ Not Started | — |
 | 5 — Zoom View | ⬜ Not Started | — |
 | 6 — Backend API | ✅ Complete | 2026-04-26 |
-| 7 — Auth | ⬜ Not Started | — |
+| 7 — Auth | ✅ Complete | 2026-04-26 |
 | 8 — Integration | ⬜ Not Started | — |
 | 9 — Mobile | ⬜ Not Started | — |
 | 10 — Polish | ⬜ Not Started | — |
@@ -227,4 +228,4 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 
 ---
 
-*Last updated: 2026-04-24*
+*Last updated: 2026-04-26*

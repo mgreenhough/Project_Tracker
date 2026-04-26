@@ -1,13 +1,16 @@
+import { Routes, Route, Link } from 'react-router-dom'
+import { useAuth } from './hooks/useAuth'
 import { useProjectStore } from './store/useProjectStore'
 import { activeProjectsSorted, archivedProjectsSorted } from './store/selectors'
 import { ProjectStack } from './components/ProjectStack'
 import { ArchivedRow } from './components/ArchivedRow'
+import { LoginPage } from './components/LoginPage'
 
-function App() {
+function MainLayout() {
   const projects = useProjectStore((s) => s.projects)
-  const isAdmin = useProjectStore((s) => s.isAdmin)
   const addProject = useProjectStore((s) => s.addProject)
   const reorderProjects = useProjectStore((s) => s.reorderProjects)
+  const { isAdmin, logout, isLoading } = useAuth()
 
   const active = activeProjectsSorted(projects)
   const archived = archivedProjectsSorted(projects)
@@ -16,28 +19,57 @@ function App() {
     <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Project Stack</h1>
-        {isAdmin && (
-          <button
-            className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium hover:bg-neon-blue/30 transition-colors"
-            onClick={() =>
-              addProject({
-                title: 'New Project',
-                description: null,
-                isPublic: true,
-                isArchived: false,
-                isDeleted: false,
-                dueDate: null,
-              })
-            }
-          >
-            + Project
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {isLoading ? (
+            <span className="text-xs text-gray-500">Loading…</span>
+          ) : isAdmin ? (
+            <>
+              <span className="text-xs text-emerald-400 border border-emerald-400/30 px-2 py-1 rounded">Admin</span>
+              <button
+                className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium hover:bg-neon-blue/30 transition-colors"
+                onClick={() =>
+                  addProject({
+                    title: 'New Project',
+                    description: null,
+                    isPublic: true,
+                    isArchived: false,
+                    isDeleted: false,
+                    dueDate: null,
+                  })
+                }
+              >
+                + Project
+              </button>
+              <button
+                onClick={logout}
+                className="px-3 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </div>
 
       <ProjectStack projects={active} isAdmin={isAdmin} onReorder={reorderProjects} />
       <ArchivedRow projects={archived} isAdmin={isAdmin} />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />} />
+      <Route path="/login" element={<LoginPage />} />
+    </Routes>
   )
 }
 

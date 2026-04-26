@@ -13,8 +13,8 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
 
 function generateTokens(payload: { id: string; email: string }) {
-  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  const accessToken = jwt.sign({ ...payload, role: 'admin' }, JWT_SECRET, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ ...payload, role: 'admin' }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 }
 
