@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
-import { projectCreateSchema, projectUpdateSchema } from '../validation/schemas.js';
+import { projectCreateSchema, projectUpdateSchema, stepCreateSchema, stepUpdateSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -166,6 +166,100 @@ router.delete('/:id', requireAuth, (req: AuthRequest, res) => {
   }
 
   db.prepare(`UPDATE projects SET is_deleted = 1, updated_at = ? WHERE id = ?`).run(now, id);
+  res.status(204).send();
+});
+
+// Admin POST /projects/:projectId/steps
+router.post('/:projectId/steps', requireAuth, (req: AuthRequest, res) => {
+  const parse = stepCreateSchema.safeParse(req.body);
+  if (!parse.success) {
+    res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+    return;
+  }
+
+  const data = parse.data;
+  const { projectId } = req.params;
+  const id = uuidv4();
+  const now = new Date().toISOString();
+
+  const project = db.prepare(`SELECT * FROM projects WHERE id = ?`).get(projectId);
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' });
+    return;
+  }
+
+  const maxOrder = db.prepare(`SELECT COALESCE(MAX(step_order), -1) as max FROM steps WHERE project_id = ?`).get(projectId) as { max: number };
+  const stepOrder = data.stepOrder ?? (maxOrder.max + 1);
+
+  db.prepare(`
+    INSERT INTO steps (id, project_id, content, step_order, status, due_date, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    projectId,
+    data.content,
+    stepOrder,
+    data.status ?? 'CLEAR',
+    data.dueDate ?? null,
+    now,
+    now
+  );
+
+  const row = db.prepare(`SELECT * FROM steps WHERE id = ?`).get(id);
+  res.status(201).json({ step: rowToStep(row) });
+});
+
+// Admin PUT /projects/:projectId/steps/:stepId
+router.put('/:projectId/steps/:stepId', requireAuth, (req: AuthRequest, res) => {
+  const parse = stepUpdateSchema.safeParse(req.body);
+  if (!parse.success) {
+    res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+    return;
+  }
+
+  const { projectId, stepId } = req.params;
+  const data = parse.data;
+  const now = new Date().toISOString();
+
+  const existing = db.prepare(`SELECT * FROM steps WHERE id = ? AND project_id = ?`).get(stepId, projectId);
+  if (!existing) {
+    res.status(404).json({ error: 'Step not found' });
+    return;
+  }
+
+  db.prepare(`
+    UPDATE steps SET
+      content = COALESCE(?, content),
+      step_order = COALESCE(?, step_order),
+      status = COALESCE(?, status),
+      due_date = ?,
+      updated_at = ?
+    WHERE id = ? AND project_id = ?
+  `).run(
+    data.content ?? null,
+    data.stepOrder ?? null,
+    data.status ?? null,
+    data.dueDate !== undefined ? data.dueDate : undefined,
+    now,
+    stepId,
+    projectId
+  );
+
+  const row = db.prepare(`SELECT * FROM steps WHERE id = ?`).get(stepId);
+  res.json({ step: rowToStep(row) });
+});
+
+// Admin DELETE /projects/:projectId/steps/:stepId
+router.delete('/:projectId/steps/:stepId', requireAuth, (req: AuthRequest, res) => {
+  const { projectId, stepId } = req.params;
+
+  const existing = db.prepare(`SELECT * FROM steps WHERE id = ? AND project_id = ?`).get(stepId, projectId);
+  if (!existing) {
+    res.status(404).json({ error: 'Step not found' });
+    return;
+  }
+
+  db.prepare(`DELETE FROM steps WHERE id = ? AND project_id = ?`).run(stepId, projectId);
   res.status(204).send();
 });
 
