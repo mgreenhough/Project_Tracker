@@ -171,7 +171,8 @@ router.delete('/:id', requireAuth, (req: AuthRequest, res) => {
 
 // Admin POST /projects/:projectId/steps
 router.post('/:projectId/steps', requireAuth, (req: AuthRequest, res) => {
-  const parse = stepCreateSchema.safeParse(req.body);
+  // Merge projectId from URL params into body for validation
+  const parse = stepCreateSchema.safeParse({ ...req.body, projectId: req.params.projectId });
   if (!parse.success) {
     res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
     return;
