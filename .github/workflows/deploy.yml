@@ -90,10 +90,10 @@ jobs:
             echo "PORT=3001" > .env
             echo "NODE_ENV=production" >> .env
             echo "CORS_ORIGINS=*" >> .env
-            if [ -z "$JWT_SECRET_VALUE" ]; then
-              echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
-            else
+            if [ -n "$JWT_SECRET_VALUE" ]; then
               echo "JWT_SECRET=$JWT_SECRET_VALUE" >> .env
+            else
+              echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
             fi
             if pm2 describe project-tracker > /dev/null 2>&1; then
               pm2 delete project-tracker || true

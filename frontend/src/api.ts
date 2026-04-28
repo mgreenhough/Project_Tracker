@@ -116,7 +116,7 @@ export async function deleteProjectApi(id: string) {
 }
 
 export async function updateStepApi(stepId: string, updates: any) {
-  const res = await fetchWithAuth(`/api/steps/${stepId}`, {
+  const res = await fetchWithAuth(`/steps/${stepId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
@@ -125,7 +125,7 @@ export async function updateStepApi(stepId: string, updates: any) {
 }
 
 export async function deleteStepApi(stepId: string) {
-  const res = await fetchWithAuth(`/api/steps/${stepId}`, {
+  const res = await fetchWithAuth(`/steps/${stepId}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete step')
