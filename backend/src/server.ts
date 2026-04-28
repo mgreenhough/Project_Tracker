@@ -26,9 +26,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// Handle OPTIONS preflight
-app.options('*', cors());
-
 app.use(express.json({ limit: '1mb' }));
 
 initDb();
