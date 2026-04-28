@@ -68,6 +68,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
+          script_stop: true
           script: |
             set -e
             if [ ! -d /opt/project-tracker/.git ]; then
@@ -97,9 +98,10 @@ jobs:
             if pm2 describe project-tracker > /dev/null 2>&1; then
               pm2 delete project-tracker
             fi
-            pm2 start dist/server.js --name project-tracker --log /var/log/project-tracker.log --error /var/log/project-tracker-error.log
+            pm2 start dist/server.js --name project-tracker
             sleep 2
             pm2 status
             pm2 save
+            cd /opt/project-tracker
             cp server/Caddyfile /etc/caddy/Caddyfile
             systemctl reload caddy
