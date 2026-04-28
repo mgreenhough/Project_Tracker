@@ -101,10 +101,13 @@ export function useAuth() {
       const newToken = await refreshAccessToken()
       if (newToken) {
         const newPayload = parseJwt(newToken)
-        setIsAdmin(newPayload?.role === 'admin')
+        const admin = newPayload?.role === 'admin'
+        setIsAdmin(admin)
+        useProjectStore.getState().setIsAdmin(admin)
         scheduleRefresh(newToken)
       } else {
         setIsAdmin(false)
+        useProjectStore.getState().setIsAdmin(false)
       }
     }, refreshIn)
   }, [])
@@ -113,6 +116,7 @@ export function useAuth() {
     const token = getAccessToken()
     if (!token) {
       setIsAdmin(false)
+      useProjectStore.getState().setIsAdmin(false)
       setIsLoading(false)
       return
     }
@@ -121,14 +125,19 @@ export function useAuth() {
       const newToken = await refreshAccessToken()
       if (newToken) {
         const payload = parseJwt(newToken)
-        setIsAdmin(payload?.role === 'admin')
+        const admin = payload?.role === 'admin'
+        setIsAdmin(admin)
+        useProjectStore.getState().setIsAdmin(admin)
         scheduleRefresh(newToken)
       } else {
         setIsAdmin(false)
+        useProjectStore.getState().setIsAdmin(false)
       }
     } else {
       const payload = parseJwt(token)
-      setIsAdmin(payload?.role === 'admin')
+      const admin = payload?.role === 'admin'
+      setIsAdmin(admin)
+      useProjectStore.getState().setIsAdmin(admin)
       scheduleRefresh(token)
     }
 
