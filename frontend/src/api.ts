@@ -116,10 +116,7 @@ export async function deleteProjectApi(id: string) {
 }
 
 export async function updateStepApi(stepId: string, updates: any) {
-  // This is a wrapper - the store calls it with just stepId and updates
-  // We need to find the projectId from the store or pass it differently
-  // For now, this is a placeholder that matches the store's expected API
-  const res = await fetchWithAuth(`/steps/${stepId}`, {
+  const res = await fetchWithAuth(`/api/steps/${stepId}`, {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
@@ -128,7 +125,7 @@ export async function updateStepApi(stepId: string, updates: any) {
 }
 
 export async function deleteStepApi(stepId: string) {
-  const res = await fetchWithAuth(`/steps/${stepId}`, {
+  const res = await fetchWithAuth(`/api/steps/${stepId}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete step')
