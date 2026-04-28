@@ -20,9 +20,15 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    callback(null, origin || true);
+  },
   credentials: true,
 }));
+
+// Handle OPTIONS preflight
+app.options('*', cors());
+
 app.use(express.json({ limit: '1mb' }));
 
 initDb();
