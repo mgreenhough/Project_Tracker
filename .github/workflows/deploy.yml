@@ -69,6 +69,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            set -e
             if [ ! -d /opt/project-tracker/.git ]; then
               rm -rf /opt/project-tracker
               git clone https://github.com/mgreenhough/Project_Tracker.git /opt/project-tracker
@@ -78,6 +79,8 @@ jobs:
             cd backend
             npm install
             npm run build
+            echo "Build completed. Checking dist/server.js..."
+            ls -la dist/server.js
             mkdir -p data
             JWT_SECRET_VALUE=""
             if [ -f .env ]; then
@@ -94,7 +97,9 @@ jobs:
             if pm2 describe project-tracker > /dev/null 2>&1; then
               pm2 delete project-tracker
             fi
-            pm2 start dist/server.js --name project-tracker
+            pm2 start dist/server.js --name project-tracker --log /var/log/project-tracker.log --error /var/log/project-tracker-error.log
+            sleep 2
+            pm2 status
             pm2 save
             cp server/Caddyfile /etc/caddy/Caddyfile
             systemctl reload caddy
