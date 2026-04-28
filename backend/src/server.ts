@@ -19,12 +19,13 @@ const PORT = process.env.PORT || 3001;
 
 app.use(helmet());
 
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, origin || true);
-  },
-  credentials: true,
-}));
+// Disable Express CORS — Caddy handles it at the reverse proxy level
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     callback(null, origin || true);
+//   },
+//   credentials: true,
+// }));
 
 app.use(express.json({ limit: '1mb' }));
 

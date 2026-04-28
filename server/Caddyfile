@@ -4,7 +4,7 @@ api.khortech.com.au {
     }
     handle @corsPreflight {
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -16,7 +16,7 @@ api.khortech.com.au {
     handle /api/* {
         reverse_proxy localhost:3001
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -26,7 +26,7 @@ api.khortech.com.au {
     handle {
         reverse_proxy localhost:3001
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -76,7 +76,7 @@ jocko.ai {
     }
     handle @corsPreflight {
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -88,7 +88,7 @@ jocko.ai {
     handle /api/* {
         reverse_proxy localhost:3001
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -98,7 +98,7 @@ jocko.ai {
     handle {
         reverse_proxy localhost:3001
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -112,7 +112,7 @@ jocko.ai {
     }
     handle @corsPreflight {
         header {
-            Access-Control-Allow-Origin "{http.request.header.Origin}"
+            Access-Control-Allow-Origin "*"
             Access-Control-Allow-Credentials true
             Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             Access-Control-Allow-Headers "Content-Type, Authorization"
@@ -123,7 +123,7 @@ jocko.ai {
 
     reverse_proxy localhost:3001
     header {
-        Access-Control-Allow-Origin "{http.request.header.Origin}"
+        Access-Control-Allow-Origin "*"
         Access-Control-Allow-Credentials true
         Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         Access-Control-Allow-Headers "Content-Type, Authorization"
