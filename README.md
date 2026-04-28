@@ -4,6 +4,17 @@ A lightweight, drag-and-drop project prioritisation tool designed for rapid oper
 
 Built to stay out of the way — minimal clicks, no modals, no corporate bloat.
 
+## Warning
+
+**This project is 100% vibe-coded. It is not robust, not complete, and not supported or maintained to any production standard.**
+
+In the interest of efficiency and achieving an MVP as fast as possible, quality, robustness, and long-term maintainability were knowingly deprioritised.
+
+This is an experimental, exploratory build — not a polished or supported product.
+You are free to use it under the terms of the MIT License, but do so at your own risk.
+
+That said, contributions, issues, and improvements are welcome. If you spot a problem or have an idea, feel free to open an issue or submit a PR — I’ll address things where time and interest permit, but no guarantees.
+
 ## Live Demo
 
 Frontend (GitHub Pages): `https://mgreenhough.github.io/project_tracker`
