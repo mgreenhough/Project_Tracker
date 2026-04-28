@@ -104,4 +104,4 @@ jobs:
             pm2 save
             cd /opt/project-tracker
             cp server/Caddyfile /etc/caddy/Caddyfile
-            sudo systemctl reload caddy || systemctl reload caddy || echo "Caddy reload failed - manual reload required"
+            sudo systemctl reload caddy || systemctl reload caddy || true
