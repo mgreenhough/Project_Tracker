@@ -264,3 +264,20 @@ git remote set-url origin https://github.com/mgreenhough/Project_Tracker.git Pri
 ---
 
 *Last updated: 2024-12-19*
+
+---
+
+## Post-Deployment Fixes
+
+### 2026-04-28 — GitHub Actions Secret Stale API URL
+
+**Problem:** Browser login failed with "Network error" despite curl working. The deployed JS on GitHub Pages still contained the old hardcoded IP `203.57.51.49`.
+
+**Root cause:** The `.github/workflows/deploy.yml` workflow injects `VITE_API_URL` from a GitHub repository secret (`secrets.VITE_API_URL`) during the build step. The secret still held `https://203.57.51.49:443/api`, overriding the local `.env.production` file. Every push rebuilt with the stale IP.
+
+**Fix:**
+1. Updated the `VITE_API_URL` secret in GitHub → Settings → Secrets and variables → Actions to `https://api.khortech.com.au/api`
+2. Pushed a new commit to trigger the GitHub Actions workflow
+3. Verified the newly deployed JS asset (`index-C4leB4pW.js`) now contains `api.khortech.com.au` and no references to `203.57.51.49`
+
+**Lesson:** GitHub Actions environment variables/secrets take precedence over committed `.env.*` files. Always verify secrets are updated when changing API endpoints.

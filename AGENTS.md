@@ -1,6 +1,12 @@
 # Agent Notes
 
-## CRITICAL - DO NOT MODIFY
+## CRITICAL
 
-- The API server is REMOTE at `https://203.57.51.49:443/api` (resolved via `jocko.ai`)
+### WORKFLOW
+
+- Create and edit files LOCALLY > Push to github > Actions deploy code to front and back ends!
+
+
+### SERVER
+- The API server is REMOTE
 - There is NO local server and NEVER will be! WE ARE NOT RUNNING DEVELOPMENT SERVER LOCALLY!
