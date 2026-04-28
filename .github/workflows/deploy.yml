@@ -79,11 +79,17 @@ jobs:
             npm install
             npm run build
             mkdir -p data
-            if [ ! -f .env ]; then
-              echo "PORT=3001" > .env
-              echo "NODE_ENV=production" >> .env
-              echo "CORS_ORIGINS=https://mgreenhough.github.io" >> .env
+            JWT_SECRET_VALUE=""
+            if [ -f .env ]; then
+              JWT_SECRET_VALUE=$(grep "^JWT_SECRET=" .env | cut -d'=' -f2-)
+            fi
+            echo "PORT=3001" > .env
+            echo "NODE_ENV=production" >> .env
+            echo "CORS_ORIGINS=*" >> .env
+            if [ -z "$JWT_SECRET_VALUE" ]; then
               echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
+            else
+              echo "JWT_SECRET=$JWT_SECRET_VALUE" >> .env
             fi
             if pm2 describe project-tracker > /dev/null 2>&1; then
               pm2 delete project-tracker
