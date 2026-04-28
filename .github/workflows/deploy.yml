@@ -96,12 +96,12 @@ jobs:
               echo "JWT_SECRET=$JWT_SECRET_VALUE" >> .env
             fi
             if pm2 describe project-tracker > /dev/null 2>&1; then
-              pm2 delete project-tracker
+              pm2 delete project-tracker || true
             fi
             pm2 start dist/server.js --name project-tracker
             sleep 2
-            pm2 status
-            pm2 save
+            pm2 status || true
+            pm2 save || true
             cd /opt/project-tracker
-            cp server/Caddyfile /etc/caddy/Caddyfile
+            cp server/Caddyfile /etc/caddy/Caddyfile || true
             sudo systemctl reload caddy || systemctl reload caddy || true
