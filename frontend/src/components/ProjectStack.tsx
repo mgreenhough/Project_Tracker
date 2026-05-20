@@ -7,6 +7,7 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
+  type DragOverEvent,
   DragOverlay,
 } from '@dnd-kit/core'
 import {
@@ -27,8 +28,8 @@ function computeAutoZoom(projectCount: number): number {
   if (isMobile && isPortrait && projectCount > 1) {
     const cardWidth = 320
     const availableWidth = window.innerWidth - 32 // padding
-    const neededOverlap = cardWidth - (availableWidth - cardWidth) / (projectCount - 1)
-    return Math.min(1, Math.max(0, neededOverlap / 220))
+    const neededOverlap = (projectCount * cardWidth - availableWidth) / (projectCount - 1)
+    return Math.min(1, Math.max(0, neededOverlap / cardWidth))
   }
   return 0
 }
@@ -119,9 +120,15 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   const autoZoom = computeAutoZoom(projects.length)
   const [displayZoom, setDisplayZoom] = useState(1) // 0-1, user-facing
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [orderedProjects, setOrderedProjects] = useState<Project[]>(projects)
   const [frontProjectId, setFrontProjectId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
+
+  // Sync local order with prop changes
+  useEffect(() => {
+    setOrderedProjects(projects)
+  }, [projects])
 
   // Recompute auto-zoom when project count changes on mobile
   useEffect(() => {
@@ -144,18 +151,22 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   }, [])
 
   const zoom = mapDisplayToZoom(displayZoom, autoZoom)
-  const maxOverlap = 220
+  const cardWidth = 320
+  const maxOverlap = cardWidth
   const overlap = zoom * maxOverlap
 
-  const activeProject = activeId ? projects.find((p) => p.id === activeId) : null
-  const activeIndex = activeId ? projects.findIndex((p) => p.id === activeId) : -1
+  const activeProject = activeId ? orderedProjects.find((p) => p.id === activeId) : null
+  const activeIndex = activeId ? orderedProjects.findIndex((p) => p.id === activeId) : -1
 
   const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault()
-    setDisplayZoom((prev) => {
-      const delta = e.deltaY > 0 ? 0.05 : -0.05
-      return Math.min(1, Math.max(0, prev + delta))
-    })
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      setDisplayZoom((prev) => {
+        const delta = e.deltaY > 0 ? 0.05 : -0.05
+        return Math.min(1, Math.max(0, prev + delta))
+      })
+    }
+    // Without Ctrl/Meta, let the browser handle native vertical scrolling
   }, [])
 
   useEffect(() => {
@@ -217,17 +228,29 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     setActiveId(event.active.id as string)
   }, [])
 
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      setOrderedProjects((items) => {
+        const oldIndex = items.findIndex((p) => p.id === active.id)
+        const newIndex = items.findIndex((p) => p.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return items
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }, [])
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
 
     if (over && active.id !== over.id) {
-      const oldIndex = projects.findIndex((p) => p.id === active.id)
-      const newIndex = projects.findIndex((p) => p.id === over.id)
-      const reordered = arrayMove(projects, oldIndex, newIndex)
+      const oldIndex = orderedProjects.findIndex((p) => p.id === active.id)
+      const newIndex = orderedProjects.findIndex((p) => p.id === over.id)
+      const reordered = arrayMove(orderedProjects, oldIndex, newIndex)
       onReorder(reordered.map((p) => p.id))
     }
-  }, [projects, onReorder])
+  }, [orderedProjects, onReorder])
 
   return (
     <div className="relative">
@@ -248,36 +271,37 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={projects.map((p) => p.id)}
+          items={orderedProjects.map((p) => p.id)}
           strategy={horizontalListSortingStrategy}
         >
           <div
             ref={containerRef}
-            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin"
+            className={`flex overflow-y-visible pb-4 scrollbar-thin ${displayZoom >= 1 ? 'overflow-x-hidden' : 'overflow-x-auto'}`}
             style={{
               paddingLeft: 0,
               alignItems: 'flex-start',
-              paddingTop: projects.length > 1 ? (projects.length - 1) * 52 : 0,
-              minHeight: 420 + (projects.length > 1 ? (projects.length - 1) * 52 : 0),
+              paddingTop: orderedProjects.length > 1 ? (orderedProjects.length - 1) * 52 : 0,
+              minHeight: 420 + (orderedProjects.length > 1 ? (orderedProjects.length - 1) * 52 : 0),
             }}
           >
-            {projects.map((project, index) => (
+            {orderedProjects.map((project, index) => (
               <SortableProjectCard
                 key={project.id}
                 project={project}
                 isAdmin={isAdmin}
                 overlap={overlap}
                 index={index}
-                total={projects.length}
+                total={orderedProjects.length}
                 frontProjectId={frontProjectId}
                 onBringToFront={setFrontProjectId}
                 style={{ animationDelay: `${index * 40}ms` }}
               />
             ))}
-            {projects.length === 0 && (
+            {orderedProjects.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-12 text-gray-500 w-full">
                 <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
