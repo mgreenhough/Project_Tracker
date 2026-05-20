@@ -62,8 +62,12 @@ export async function updateProject(id: string, project: any) {
     method: 'PUT',
     body: JSON.stringify(project),
   })
-  if (!res.ok) throw new Error('Failed to update project')
-  return res.json()
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Failed to update project')
+    throw new Error(text || 'Failed to update project')
+  }
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
 }
 
 export async function deleteProject(id: string) {
