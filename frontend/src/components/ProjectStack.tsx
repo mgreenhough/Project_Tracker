@@ -108,6 +108,7 @@ const SortableProjectCard = memo(function SortableProjectCard({
         project={project}
         isAdmin={isAdmin}
         isArchived={false}
+        isFront={isFront}
         dragHandleProps={isAdmin ? { attributes, listeners } : undefined}
       />
     </div>
@@ -229,7 +230,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   }, [projects, onReorder])
 
   return (
-    <div className="relative" style={{ paddingTop: Math.max(80, (projects.length - 1) * 52 + 16) }}>
+    <div className="relative">
       <div className="flex items-center gap-3 mb-3">
         <span className="text-xs text-gray-500">Zoom</span>
         <input
@@ -255,8 +256,13 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
         >
           <div
             ref={containerRef}
-            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px]"
-            style={{ paddingLeft: 0, alignItems: 'flex-start' }}
+            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin"
+            style={{
+              paddingLeft: 0,
+              alignItems: 'flex-start',
+              paddingTop: projects.length > 1 ? (projects.length - 1) * 52 : 0,
+              minHeight: 420 + (projects.length > 1 ? (projects.length - 1) * 52 : 0),
+            }}
           >
             {projects.map((project, index) => (
               <SortableProjectCard
@@ -299,6 +305,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
                 project={activeProject}
                 isAdmin={isAdmin}
                 isArchived={false}
+                isFront={true}
               />
             </div>
           ) : null}
