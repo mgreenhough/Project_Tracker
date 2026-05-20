@@ -1,4 +1,4 @@
-export type StepStatus = 'CLEAR' | 'HOLD_POINT' | 'COMPLETE'
+export type StepStatus = 'CLEAR' | 'HOLD_POINT' | 'DECISION_POINT' | 'COMPLETE'
 
 export interface Step {
   id: string

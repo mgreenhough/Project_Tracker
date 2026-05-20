@@ -12,7 +12,7 @@ interface StepItemProps {
 
 const statusConfig = {
   CLEAR: {
-    icon: '',
+    icon: '☐',
     className: 'text-gray-500',
     label: 'Clear',
   },
@@ -20,6 +20,11 @@ const statusConfig = {
     icon: '◐',
     className: 'text-neon-orange',
     label: 'Hold point',
+  },
+  DECISION_POINT: {
+    icon: '◈',
+    className: 'text-neon-red',
+    label: 'Decision point',
   },
   COMPLETE: {
     icon: '☑',
@@ -122,8 +127,10 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   }, [isAdmin, cycleStepStatus, step.projectId, step.id])
 
   const handleContentInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setContentValue(e.target.value)
-    debouncedUpdateContent(step.projectId, step.id, e.target.value)
+    const value = e.target.value
+    const capitalized = value.length === 1 ? value.toUpperCase() : value
+    setContentValue(capitalized)
+    debouncedUpdateContent(step.projectId, step.id, capitalized)
   }, [step.projectId, step.id, debouncedUpdateContent])
 
   const handleContentSpanClick = useCallback(() => {
@@ -193,6 +200,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
         <input
           ref={contentInputRef}
           type="text"
+          autoCapitalize="sentences"
           value={contentValue}
           onChange={handleContentInputChange}
           onBlur={handleContentConfirm}
@@ -201,8 +209,8 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
         />
       ) : (
         <span
-          className={`flex-1 truncate cursor-pointer ${
-            step.status === 'COMPLETE' ? 'line-through opacity-40' : 'text-gray-200'
+          className={`flex-1 break-words cursor-pointer ${
+            step.status === 'COMPLETE' ? 'line-through opacity-40' : step.status === 'DECISION_POINT' ? 'text-neon-red' : 'text-gray-200'
           } ${isAdmin ? 'active:text-neon-blue' : ''}`}
           onClick={handleContentSpanClick}
         >

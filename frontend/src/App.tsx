@@ -49,9 +49,9 @@ const MainLayout = memo(function MainLayout() {
   }, [addProject])
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6">
+    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Project Stack</h1>
+        <h1 className="text-2xl font-bold tracking-tight neon-title">Project Stack</h1>
         <div className="flex items-center gap-3">
           {authLoading ? (
             <span className="text-xs text-gray-500">Loading…</span>

@@ -16,9 +16,22 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom scrollbar for horizontal stacks - hidden on mobile, thin on desktop */
+/* Neon tech title styling */
+.neon-title {
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+  text-shadow:
+    0 0 5px #00f3ff,
+    0 0 10px #00f3ff,
+    0 0 20px #00f3ff,
+    0 0 40px #00a3ff,
+    0 0 80px #00a3ff;
+  letter-spacing: 0.1em;
+}
+
+/* Custom scrollbar for horizontal stacks - thicker for easier selection */
 .scrollbar-thin::-webkit-scrollbar {
-  height: 6px;
+  height: 12px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -26,12 +39,14 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Mobile: hide scrollbars but keep scroll functionality */

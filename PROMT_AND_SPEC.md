@@ -271,7 +271,7 @@ Animations should be subtle and fast.
 ## Due Date Colouring
 
 * due dates should be highlighted based on urgency in THREE stages
-* high urgency (within 7 days): red, medium urgency (within 14 days): orange, low urgency (beyond 14 days): white
+* high urgency (within 7 days): neon red, medium urgency (within 14 days): neon orange, low urgency (beyond 14 days): neon green
 * Tasks and projects with a due date of high and medium urgency should make project cards visually distinct by using appropriate highlighting of project card and bold labels
 
 ---
@@ -282,7 +282,7 @@ Animations should be subtle and fast.
 * Zooming should not change text or card size
 * Zoom should adjust horizontal overlap of cards so that many cards can be fit on the screen efficiently or zooming in will show each card separately
 
-* **IMPORTANT DETAIL: When cards are overlapped, they should be vertically cascaded by at least one line to ensure that the full title and due date (if any) of each card remain visible. Left-most card (highest priority) should be in front, cascading up and to the right.**
+* **IMPORTANT DETAIL: When cards are overlapped, they should be vertically cascaded upward by at least one line to ensure that the full title and due date (if any) of each card remain visible. Left-most card (highest priority) should be in front, cascading upward and to the right.**
 
 ---
 

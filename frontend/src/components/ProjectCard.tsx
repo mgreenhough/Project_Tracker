@@ -19,6 +19,7 @@ import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
 import { StepItem } from './StepItem'
 import { DueDateBadge } from './DueDateBadge'
 import { useProjectStore } from '../store/useProjectStore'
+import { urgencyLevel, urgencyBorderColor, urgencyBgColor } from '../store/selectors'
 import type { Project } from '../types'
 
 interface ProjectCardProps {
@@ -47,8 +48,19 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   const updateProject = useProjectStore((s) => s.updateProject)
   const addStep = useProjectStore((s) => s.addStep)
   const archiveProject = useProjectStore((s) => s.archiveProject)
+  const dearchiveProject = useProjectStore((s) => s.dearchiveProject)
   const deleteProject = useProjectStore((s) => s.deleteProject)
   const steps = useMemo(() => [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder), [project.steps])
+
+  const projectUrgency = useMemo(() => urgencyLevel(project.dueDate), [project.dueDate])
+  const stepUrgencies = useMemo(() => steps.map((s) => urgencyLevel(s.dueDate)), [steps])
+  const highestUrgency = useMemo(() => {
+    const all = [projectUrgency, ...stepUrgencies].filter(Boolean) as Array<'high' | 'medium' | 'low'>
+    if (all.includes('high')) return 'high'
+    if (all.includes('medium')) return 'medium'
+    if (all.includes('low')) return 'low'
+    return null
+  }, [projectUrgency, stepUrgencies])
 
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(project.title)
@@ -156,12 +168,12 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   return (
     <div
       className={`
-        relative w-[320px] rounded-xl p-4 flex flex-col gap-3
-        border transition-all duration-200 animate-fade-in
+        relative w-[320px] rounded-xl pt-2 pr-4 pb-4 pl-4 flex flex-col gap-3
+        border-2 transition-all duration-200 animate-fade-in
         ${
           isArchived
             ? 'bg-gray-900/40 border-gray-800 opacity-60 grayscale-[0.3]'
-            : 'bg-gray-900/80 border-gray-700'
+            : `bg-gray-900/80 ${urgencyBorderColor(highestUrgency)} ${urgencyBgColor(highestUrgency)}`
         }
       `}
     >
@@ -265,6 +277,26 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
             title="Archive project"
           >
             Archive
+          </button>
+          <button
+            type="button"
+            onClick={() => deleteProject(project.id)}
+            className="text-xs text-gray-500 active:text-neon-red transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active"
+            title="Delete project"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      {isAdmin && isArchived && (
+        <div className="flex items-center gap-2 mt-1">
+          <button
+            type="button"
+            onClick={() => dearchiveProject(project.id)}
+            className="text-xs text-gray-500 active:text-neon-green transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
+            title="De-archive project"
+          >
+            De-archive
           </button>
           <button
             type="button"

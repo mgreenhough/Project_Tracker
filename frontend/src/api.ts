@@ -71,7 +71,7 @@ export async function deleteProject(id: string) {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete project')
-  return res.json()
+  return res.status === 204 ? null : res.json()
 }
 
 // Steps

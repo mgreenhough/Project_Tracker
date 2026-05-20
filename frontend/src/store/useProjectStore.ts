@@ -36,6 +36,7 @@ interface ProjectStoreActions {
   updateProject: (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>) => void
   deleteProject: (id: string) => void
   archiveProject: (id: string) => void
+  dearchiveProject: (id: string) => void
   reorderProjects: (orderedIds: string[]) => void
 
   // Step actions
@@ -150,6 +151,20 @@ export const useProjectStore = create<ProjectStore>()(
         if (get().isAdmin) {
           updateProjectApi(id, { isArchived: true }).catch((err: any) => {
             set({ error: err.message || 'Failed to archive project' })
+          })
+        }
+      },
+
+      dearchiveProject: (id) => {
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, isArchived: false, updatedAt: now() } : p
+          ),
+        }))
+
+        if (get().isAdmin) {
+          updateProjectApi(id, { isArchived: false }).catch((err: any) => {
+            set({ error: err.message || 'Failed to de-archive project' })
           })
         }
       },
@@ -287,7 +302,8 @@ export const useProjectStore = create<ProjectStore>()(
       cycleStepStatus: (projectId, stepId) => {
         const cycle: Record<StepStatus, StepStatus> = {
           CLEAR: 'HOLD_POINT',
-          HOLD_POINT: 'COMPLETE',
+          HOLD_POINT: 'DECISION_POINT',
+          DECISION_POINT: 'COMPLETE',
           COMPLETE: 'CLEAR',
         }
         set((state) => {

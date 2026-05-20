@@ -6,6 +6,8 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -19,6 +21,25 @@ import { memo, useState, useRef, useCallback, useEffect } from 'react'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '../types'
 
+function computeAutoZoom(projectCount: number): number {
+  const isMobile = window.innerWidth < 768
+  const isPortrait = window.innerHeight > window.innerWidth
+  if (isMobile && isPortrait && projectCount > 1) {
+    const cardWidth = 320
+    const availableWidth = window.innerWidth - 32 // padding
+    const neededOverlap = cardWidth - (availableWidth - cardWidth) / (projectCount - 1)
+    return Math.min(1, Math.max(0, neededOverlap / 220))
+  }
+  return 0
+}
+
+
+
+function mapDisplayToZoom(display: number, autoZoom: number): number {
+  if (autoZoom <= 0) return display
+  return Math.min(1, display / autoZoom)
+}
+
 interface ProjectStackProps {
   projects: Project[]
   isAdmin: boolean
@@ -31,14 +52,20 @@ const SortableProjectCard = memo(function SortableProjectCard({
   overlap,
   index,
   total,
+  frontProjectId,
+  onBringToFront,
   style: extraStyle,
+  isOverlay = false,
 }: {
   project: Project
   isAdmin: boolean
   overlap: number
   index: number
   total: number
+  frontProjectId: string | null
+  onBringToFront: (id: string | null) => void
   style?: React.CSSProperties
+  isOverlay?: boolean
 }) {
   const {
     attributes,
@@ -49,17 +76,32 @@ const SortableProjectCard = memo(function SortableProjectCard({
     isDragging,
   } = useSortable({ id: project.id })
 
+  const isFront = frontProjectId === project.id
+  const baseZIndex = isDragging ? 100 : total - index
+  const zIndex = isFront ? 200 : baseZIndex
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     marginLeft: index === 0 ? 0 : -overlap,
-    marginTop: index * 24,
-    zIndex: isDragging ? 100 : total - index,
+    marginTop: index * -36,
+    zIndex,
+    opacity: isDragging && !isOverlay ? 0.3 : 1,
     ...extraStyle,
   }
 
+  const handleClick = useCallback(() => {
+    onBringToFront(project.id)
+  }, [onBringToFront, project.id])
+
   return (
-    <div ref={setNodeRef} style={style} className="relative flex-shrink-0 animate-fade-in-up">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative flex-shrink-0 animate-fade-in-up"
+      data-project-card="true"
+      onClick={handleClick}
+    >
       <ProjectCard
         project={project}
         isAdmin={isAdmin}
@@ -71,21 +113,46 @@ const SortableProjectCard = memo(function SortableProjectCard({
 })
 
 export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps) {
-  const [zoom, setZoom] = useState(0)
+  const autoZoom = computeAutoZoom(projects.length)
+  const [displayZoom, setDisplayZoom] = useState(1) // 0-1, user-facing
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [frontProjectId, setFrontProjectId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
 
+  // Recompute auto-zoom when project count changes on mobile
+  useEffect(() => {
+    const auto = computeAutoZoom(projects.length)
+    if (auto > 0) setDisplayZoom(1)
+  }, [projects.length])
+
+  // Click outside to reset front project
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as HTMLElement
+      // Check if click is inside any project card
+      const isInsideCard = target.closest('[data-project-card]') !== null
+      if (!isInsideCard) {
+        setFrontProjectId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const zoom = mapDisplayToZoom(displayZoom, autoZoom)
   const maxOverlap = 220
   const overlap = zoom * maxOverlap
 
+  const activeProject = activeId ? projects.find((p) => p.id === activeId) : null
+  const activeIndex = activeId ? projects.findIndex((p) => p.id === activeId) : -1
+
   const handleWheel = useCallback((e: WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault()
-      setZoom((prev) => {
-        const delta = e.deltaY > 0 ? 0.05 : -0.05
-        return Math.min(1, Math.max(0, prev + delta))
-      })
-    }
+    e.preventDefault()
+    setDisplayZoom((prev) => {
+      const delta = e.deltaY > 0 ? 0.05 : -0.05
+      return Math.min(1, Math.max(0, prev + delta))
+    })
   }, [])
 
   useEffect(() => {
@@ -111,7 +178,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
       const dist = Math.sqrt(dx * dx + dy * dy)
       const delta = (dist - lastPinchDist.current) / 400
       lastPinchDist.current = dist
-      setZoom((prev) => Math.min(1, Math.max(0, prev + delta)))
+      setDisplayZoom((prev) => Math.min(1, Math.max(0, prev + delta)))
     }
   }, [])
 
@@ -143,8 +210,13 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     })
   )
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
+    setActiveId(null)
 
     if (over && active.id !== over.id) {
       const oldIndex = projects.findIndex((p) => p.id === active.id)
@@ -163,15 +235,16 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
           min={0}
           max={1}
           step={0.01}
-          value={zoom}
-          onChange={(e) => setZoom(parseFloat(e.target.value))}
+          value={displayZoom}
+          onChange={(e) => setDisplayZoom(parseFloat(e.target.value))}
           className="w-32 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-neon-blue"
         />
-        <span className="text-xs text-gray-500 w-8">{Math.round(zoom * 100)}%</span>
+        <span className="text-xs text-gray-500 w-8">{Math.round(displayZoom * 100)}%</span>
       </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
@@ -180,8 +253,8 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
         >
           <div
             ref={containerRef}
-            className="flex overflow-x-auto pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px]"
-            style={{ paddingLeft: 0 }}
+            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px] pt-16"
+            style={{ paddingLeft: 0, alignItems: 'flex-start' }}
           >
             {projects.map((project, index) => (
               <SortableProjectCard
@@ -191,6 +264,8 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
                 overlap={overlap}
                 index={index}
                 total={projects.length}
+                frontProjectId={frontProjectId}
+                onBringToFront={setFrontProjectId}
                 style={{ animationDelay: `${index * 40}ms` }}
               />
             ))}
@@ -205,6 +280,27 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
             )}
           </div>
         </SortableContext>
+        <DragOverlay dropAnimation={null}>
+          {activeProject ? (
+            <div
+              className="flex-shrink-0"
+              style={{
+                marginLeft: activeIndex === 0 ? 0 : -overlap,
+                marginTop: activeIndex * -36,
+                zIndex: 100,
+                transform: 'scale(1.05)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                cursor: 'grabbing',
+              }}
+            >
+              <ProjectCard
+                project={activeProject}
+                isAdmin={isAdmin}
+                isArchived={false}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   )

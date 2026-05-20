@@ -15,7 +15,7 @@ export const stepCreateSchema = z.object({
   projectId: z.string().uuid(),
   content: z.string().min(1).max(500),
   stepOrder: z.number().int().min(0).optional(),
-  status: z.enum(['CLEAR', 'HOLD_POINT', 'COMPLETE']).optional(),
+  status: z.enum(['CLEAR', 'HOLD_POINT', 'DECISION_POINT', 'COMPLETE']).optional(),
   dueDate: z.string().regex(/^\d{2}\/\d{2}\/\d{2}$/).nullable().optional(),
 });
 

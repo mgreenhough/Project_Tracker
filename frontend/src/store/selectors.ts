@@ -1,5 +1,5 @@
 import type { Project } from '../types'
-import { differenceInCalendarDays, parseISO } from 'date-fns'
+import { differenceInCalendarDays, parse } from 'date-fns'
 
 export const activeProjectsSorted = (projects: Project[]): Project[] =>
   projects
@@ -15,7 +15,9 @@ export type UrgencyLevel = 'high' | 'medium' | 'low'
 
 export const urgencyLevel = (dueDate: string | null): UrgencyLevel | null => {
   if (!dueDate) return null
-  const days = differenceInCalendarDays(parseISO(dueDate), new Date())
+  const parsed = parse(dueDate, 'dd/MM/yy', new Date())
+  if (isNaN(parsed.getTime())) return null
+  const days = differenceInCalendarDays(parsed, new Date())
   if (days <= 7) return 'high'
   if (days <= 14) return 'medium'
   return 'low'
@@ -24,11 +26,35 @@ export const urgencyLevel = (dueDate: string | null): UrgencyLevel | null => {
 export const urgencyColor = (level: UrgencyLevel | null): string => {
   switch (level) {
     case 'high':
-      return 'text-red-400'
+      return 'text-neon-red'
     case 'medium':
-      return 'text-orange-400'
+      return 'text-neon-orange'
     case 'low':
     default:
-      return 'text-white'
+      return 'text-neon-green'
+  }
+}
+
+export const urgencyBorderColor = (level: UrgencyLevel | null): string => {
+  switch (level) {
+    case 'high':
+      return 'border-neon-red'
+    case 'medium':
+      return 'border-neon-orange'
+    case 'low':
+    default:
+      return 'border-gray-700'
+  }
+}
+
+export const urgencyBgColor = (level: UrgencyLevel | null): string => {
+  switch (level) {
+    case 'high':
+      return 'bg-red-950/30'
+    case 'medium':
+      return 'bg-orange-950/30'
+    case 'low':
+    default:
+      return ''
   }
 }
