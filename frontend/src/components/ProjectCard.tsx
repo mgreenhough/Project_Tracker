@@ -168,11 +168,11 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   return (
     <div
       className={`
-        relative w-[320px] rounded-xl pt-2 pr-4 pb-4 pl-4 flex flex-col gap-3
+        relative w-[320px] rounded-xl pt-1 pr-4 pb-4 pl-4 flex flex-col gap-3
         border-2 transition-all duration-200 animate-fade-in
         ${
           isArchived
-            ? 'bg-gray-900/40 border-gray-800 opacity-60 grayscale-[0.3]'
+            ? 'bg-gray-900/40 border-neon-green/60 opacity-60 grayscale-[0.3]'
             : `bg-gray-900/80 ${urgencyBorderColor(highestUrgency)} ${urgencyBgColor(highestUrgency)}`
         }
       `}

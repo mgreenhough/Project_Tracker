@@ -79,14 +79,16 @@ const SortableProjectCard = memo(function SortableProjectCard({
   const isFront = frontProjectId === project.id
   const baseZIndex = isDragging ? 100 : total - index
   const zIndex = isFront ? 200 : baseZIndex
+  const hasFront = frontProjectId !== null
+  const isBackCard = hasFront && !isFront
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     marginLeft: index === 0 ? 0 : -overlap,
-    marginTop: index * -36,
+    marginTop: index * -52,
     zIndex,
-    opacity: isDragging && !isOverlay ? 0.3 : 1,
+    opacity: isDragging && !isOverlay ? 0.3 : isBackCard ? 0.4 : 1,
     ...extraStyle,
   }
 
@@ -227,7 +229,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   }, [projects, onReorder])
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ paddingTop: Math.max(80, (projects.length - 1) * 52 + 16) }}>
       <div className="flex items-center gap-3 mb-3">
         <span className="text-xs text-gray-500">Zoom</span>
         <input
@@ -253,7 +255,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
         >
           <div
             ref={containerRef}
-            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px] pt-16"
+            className="flex overflow-x-auto overflow-y-visible pb-4 scrollbar-thin min-h-[300px] landscape:min-h-[420px]"
             style={{ paddingLeft: 0, alignItems: 'flex-start' }}
           >
             {projects.map((project, index) => (
@@ -286,7 +288,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
               className="flex-shrink-0"
               style={{
                 marginLeft: activeIndex === 0 ? 0 : -overlap,
-                marginTop: activeIndex * -36,
+                marginTop: activeIndex * -52,
                 zIndex: 100,
                 transform: 'scale(1.05)',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
