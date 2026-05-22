@@ -1,6 +1,5 @@
 import express from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -19,14 +18,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(helmet());
-
-const corsOrigins = process.env.CORS_ORIGINS;
-if (corsOrigins) {
-  const origin = corsOrigins === '*' ? '*' : corsOrigins.split(',');
-  app.use(cors({ origin }));
-} else {
-  app.use(cors());
-}
 
 app.use(express.json({ limit: '1mb' }));
 
