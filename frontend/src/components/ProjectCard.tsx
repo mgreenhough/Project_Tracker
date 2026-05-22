@@ -4,6 +4,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -151,6 +152,12 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
         distance: 8,
       },
     }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -185,6 +192,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
           <button
             type="button"
             className="cursor-grab active:cursor-grabbing text-gray-500 active:text-gray-300 text-lg select-none w-11 h-11 flex items-center justify-center rounded active:bg-white/5 transition-colors touch-manipulation"
+            style={{ touchAction: 'none' }}
             {...dragHandleProps.attributes}
             {...dragHandleProps.listeners}
             aria-label="Drag to reorder project"

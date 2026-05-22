@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -7,6 +6,7 @@ import { fileURLToPath } from 'url';
 import projectRoutes from './routes/projects.js';
 import stepRoutes from './routes/steps.js';
 import authRoutes from './routes/auth.js';
+import tabRoutes from './routes/tabs.js';
 import { initDb } from './db/database.js';
 
 dotenv.config();
@@ -19,14 +19,6 @@ const PORT = process.env.PORT || 3001;
 
 app.use(helmet());
 
-// Disable Express CORS — Caddy handles it at the reverse proxy level
-// app.use(cors({
-//   origin: (origin, callback) => {
-//     callback(null, origin || true);
-//   },
-//   credentials: true,
-// }));
-
 app.use(express.json({ limit: '1mb' }));
 
 initDb();
@@ -34,6 +26,7 @@ initDb();
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/steps', stepRoutes);
+app.use('/api/tabs', tabRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

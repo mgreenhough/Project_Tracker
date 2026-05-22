@@ -98,6 +98,7 @@ export const useProjectStore = create<ProjectStore>()(
               isPublic: newProject.isPublic,
               isArchived: newProject.isArchived,
               dueDate: newProject.dueDate,
+              tabId: newProject.tabId,
             })
             // Replace temp id with server id
             set((state) => ({

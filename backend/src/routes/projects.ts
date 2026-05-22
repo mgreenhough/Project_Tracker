@@ -15,6 +15,7 @@ interface ProjectOut {
   isArchived: boolean;
   isDeleted: boolean;
   dueDate: string | null;
+  tabId: string | null;
   createdAt: string;
   updatedAt: string;
   steps: any[];
@@ -30,6 +31,7 @@ function rowToProject(row: any): ProjectOut {
     isArchived: !!row.is_archived,
     isDeleted: !!row.is_deleted,
     dueDate: row.due_date,
+    tabId: row.tab_id ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     steps: [],
@@ -50,10 +52,20 @@ function rowToStep(row: any) {
 }
 
 // Public GET /projects — returns all non-deleted public projects with steps
-router.get('/', (_req, res) => {
-  const projectRows = db.prepare(
-    `SELECT * FROM projects WHERE is_deleted = 0 AND is_public = 1 ORDER BY priority_index ASC`
-  ).all();
+router.get('/', (req, res) => {
+  const tabId = req.query.tabId as string | undefined;
+
+  let sql = `SELECT * FROM projects WHERE is_deleted = 0 AND is_public = 1`;
+  const params: any[] = [];
+
+  if (tabId) {
+    sql += ` AND tab_id = ?`;
+    params.push(tabId);
+  }
+
+  sql += ` ORDER BY priority_index ASC`;
+
+  const projectRows = db.prepare(sql).all(...params);
 
   const stepRows = projectRows.length > 0
     ? db.prepare(
@@ -92,8 +104,8 @@ router.post('/', requireAuth, (req: AuthRequest, res) => {
   const priorityIndex = data.priorityIndex ?? (maxPriority.max + 1);
 
   db.prepare(`
-    INSERT INTO projects (id, title, description, priority_index, is_public, is_archived, is_deleted, due_date, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO projects (id, title, description, priority_index, is_public, is_archived, is_deleted, due_date, tab_id, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.title,
@@ -103,6 +115,7 @@ router.post('/', requireAuth, (req: AuthRequest, res) => {
     data.isArchived ?? false ? 1 : 0,
     0,
     data.dueDate ?? null,
+    data.tabId ?? null,
     now,
     now
   );
@@ -137,6 +150,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
       is_public = COALESCE(?, is_public),
       is_archived = COALESCE(?, is_archived),
       due_date = ?,
+      tab_id = ?,
       updated_at = ?
     WHERE id = ?
   `).run(
@@ -146,6 +160,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
     data.isPublic !== undefined ? (data.isPublic ? 1 : 0) : null,
     data.isArchived !== undefined ? (data.isArchived ? 1 : 0) : null,
     data.dueDate !== undefined ? data.dueDate : undefined,
+    data.tabId !== undefined ? data.tabId : undefined,
     now,
     id
   );

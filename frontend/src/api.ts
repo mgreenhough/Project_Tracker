@@ -41,10 +41,50 @@ async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Res
 }
 
 // Public
-export async function fetchProjects(): Promise<{ projects: any[] }> {
-  const res = await fetch(`${API_URL}/projects`)
+export async function fetchProjects(tabId?: string): Promise<{ projects: any[] }> {
+  const url = new URL(`${API_URL}/projects`)
+  if (tabId) url.searchParams.set('tabId', tabId)
+  const res = await fetch(url.toString())
   if (!res.ok) throw new Error('Failed to fetch projects')
   return res.json()
+}
+
+// Public tabs — only returns public tabs for unauthenticated users
+export async function fetchTabs(): Promise<{ tabs: any[] }> {
+  const res = await fetch(`${API_URL}/tabs`)
+  if (!res.ok) throw new Error('Failed to fetch tabs')
+  return res.json()
+}
+
+export async function createTab(tab: any) {
+  const res = await fetchWithAuth('/tabs', {
+    method: 'POST',
+    body: JSON.stringify(tab),
+  })
+  if (!res.ok) throw new Error('Failed to create tab')
+  return res.json()
+}
+
+export async function updateTab(id: string, tab: any) {
+  const res = await fetchWithAuth(`/tabs/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(tab),
+  })
+  if (!res.ok) throw new Error('Failed to update tab')
+  return res.json()
+}
+
+export async function deleteTab(id: string) {
+  const res = await fetchWithAuth(`/tabs/${id}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to delete tab' }))
+    const error = new Error(err.error || 'Failed to delete tab')
+    ;(error as any).status = res.status
+    throw error
+  }
+  return res.status === 204 ? null : res.json()
 }
 
 // Projects (admin)

@@ -2,10 +2,12 @@ import { Routes, Route, Link } from 'react-router-dom'
 import { useEffect, memo, useCallback } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useProjectStore } from './store/useProjectStore'
+import { useTabStore } from './store/useTabStore'
 import { activeProjectsSorted, archivedProjectsSorted } from './store/selectors'
 import { ProjectStack } from './components/ProjectStack'
 import { ArchivedRow } from './components/ArchivedRow'
 import { LoginPage } from './components/LoginPage'
+import { TabBar } from './components/TabBar'
 
 function SkeletonCard() {
   return (
@@ -31,12 +33,16 @@ const MainLayout = memo(function MainLayout() {
   const setError = useProjectStore((s) => s.setError)
   const { isAdmin, logout, isLoading: authLoading } = useAuth()
 
+  const activeTabId = useTabStore((s) => s.activeTabId)
+  const loadTabs = useTabStore((s) => s.loadTabs)
+
   useEffect(() => {
     loadProjects()
-  }, [loadProjects])
+    loadTabs()
+  }, [loadProjects, loadTabs])
 
-  const active = activeProjectsSorted(projects)
-  const archived = archivedProjectsSorted(projects)
+  const active = activeProjectsSorted(projects, activeTabId)
+  const archived = archivedProjectsSorted(projects, activeTabId)
 
   const handleAddProject = useCallback(() => {
     addProject({
@@ -45,8 +51,9 @@ const MainLayout = memo(function MainLayout() {
       isPublic: true,
       isArchived: false,
       dueDate: null,
+      tabId: activeTabId ?? null,
     })
-  }, [addProject])
+  }, [addProject, activeTabId])
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6 overflow-y-auto">
@@ -101,6 +108,8 @@ const MainLayout = memo(function MainLayout() {
           </button>
         </div>
       )}
+
+      <TabBar isAdmin={isAdmin} />
 
       <ProjectStack projects={active} isAdmin={isAdmin} onReorder={reorderProjects} />
       <ArchivedRow projects={archived} isAdmin={isAdmin} />

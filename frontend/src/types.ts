@@ -1,5 +1,13 @@
 export type StepStatus = 'CLEAR' | 'HOLD_POINT' | 'DECISION_POINT' | 'COMPLETE'
 
+export interface Tab {
+  id: string
+  name: string
+  visibility: 'public' | 'private'
+  sortOrder: number
+  createdAt: string
+}
+
 export interface Step {
   id: string
   projectId: string
@@ -20,6 +28,7 @@ export interface Project {
   isArchived: boolean
   isDeleted: boolean
   dueDate: string | null
+  tabId: string | null
   createdAt: string
   updatedAt: string
   steps: Step[]
