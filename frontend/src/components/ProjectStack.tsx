@@ -132,8 +132,10 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   // Sync local order with prop changes - only when actual order changes
   const projectIdsKey = projects.map((p) => p.id).join(',')
   useEffect(() => {
-    setOrderedProjects(projects)
-  }, [projectIdsKey])
+    if (!activeId) {
+      setOrderedProjects(projects)
+    }
+  }, [projectIdsKey, activeId])
 
   // Recompute auto-zoom when project count changes on mobile
   useEffect(() => {
@@ -256,16 +258,10 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     setActiveId(null)
 
     if (over && active.id !== over.id) {
-      setOrderedProjects((items) => {
-        const oldIndex = items.findIndex((p) => p.id === active.id)
-        const newIndex = items.findIndex((p) => p.id === over.id)
-        if (oldIndex === -1 || newIndex === -1) return items
-        const reordered = arrayMove(items, oldIndex, newIndex)
-        onReorder(reordered.map((p) => p.id))
-        return reordered
-      })
+      // orderedProjects already has the correct order from handleDragOver
+      onReorder(orderedProjects.map((p) => p.id))
     }
-  }, [onReorder])
+  }, [onReorder, orderedProjects])
 
   return (
     <div className="relative">

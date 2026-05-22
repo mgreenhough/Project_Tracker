@@ -89,3 +89,7 @@ Committed 2042: ae2d105
     304. [x] DRAG POSITION STILL NOT SAVING!
 
     404. [x] 204,304< DRAG POSITION STILL NOT SAVING! FIX RE-APPLIED: reorderProjects now uses async/await + Promise.all to ensure all position updates complete before continuing. Added error handling so failures are visible instead of swallowed.
+
+Committed 2106: e16c23f
+
+    504. [] STILL NOT FUCKING WORKING!!!!!!! REFACTOR??????
