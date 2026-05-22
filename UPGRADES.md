@@ -127,5 +127,6 @@ Summary of changes:
 |------|-------------|-------------|
 | 22/05/2026 | `aa5a748` | fix: project drag function on mobile and completed major TAB upgrade |
 | 22/05/2026 | `c019ce0` | fix: add missing CORS middleware to backend server - deployment hotfix |
-
-> **Revert note:** To revert this push, run: `git revert aa5a748` or `git reset --hard aa5a748^` (if not yet pulled by others).
+| 22/05/2026 | `e925029` | fix: remove duplicate Express CORS middleware — Caddy already handles CORS at the edge. Resolves login "Unexpected end of JSON input" error caused by conflicting CORS headers (wildcard + credentials). |
+| 22/05/2026 | `d580daa` | fix: move CREATE INDEX after tab_id migration to prevent crash on old databases. Backend was crash-looping with `SqliteError: no such column: tab_id` because `CREATE INDEX idx_projects_tab` ran before the `ALTER TABLE` migration that adds `tab_id` to existing databases. |
+
