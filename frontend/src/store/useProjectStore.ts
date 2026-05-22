@@ -37,7 +37,7 @@ interface ProjectStoreActions {
   deleteProject: (id: string) => void
   archiveProject: (id: string) => void
   dearchiveProject: (id: string) => void
-  reorderProjects: (orderedIds: string[]) => void
+  reorderProjects: (orderedIds: string[]) => Promise<void>
 
   // Step actions
   addStep: (projectId: string, step: Omit<Step, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>) => Promise<Step>
@@ -176,7 +176,7 @@ export const useProjectStore = create<ProjectStore>()(
         }
       },
 
-      reorderProjects: (orderedIds) => {
+      reorderProjects: async (orderedIds) => {
         set((state) => {
           const map = new Map(state.projects.map((p) => [p.id, p]))
           const reordered = orderedIds
@@ -189,9 +189,16 @@ export const useProjectStore = create<ProjectStore>()(
         })
 
         if (get().isAdmin) {
-          orderedIds.forEach((id, index) => {
-            updateProjectApi(id, { priorityIndex: index }).catch(() => {})
-          })
+          try {
+            await Promise.all(
+              orderedIds.map((id, index) =>
+                updateProjectApi(id, { priorityIndex: index })
+              )
+            )
+          } catch (err: any) {
+            set({ error: err.message || 'Failed to save project order' })
+            throw err
+          }
         }
       },
 

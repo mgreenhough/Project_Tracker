@@ -82,4 +82,10 @@ Committed 1821: 659b375
 
     206. [x] Clicking on tab immediately opens name edit. edit should only open after second click.
 
-    304. [x] Parent issue 204! DRAG POSITION STILL NOT SAVING!
+    204. [x] Parent issue 204! DRAG POSITION STILL NOT SAVING! - Fixed: reorderProjects was reverted to fire-and-forget pattern. Restored Promise.all with proper error handling.
+
+Committed 2042: ae2d105
+
+    304. [x] DRAG POSITION STILL NOT SAVING!
+
+    404. [x] 204,304< DRAG POSITION STILL NOT SAVING! FIX RE-APPLIED: reorderProjects now uses async/await + Promise.all to ensure all position updates complete before continuing. Added error handling so failures are visible instead of swallowed.
