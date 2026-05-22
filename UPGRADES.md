@@ -130,3 +130,17 @@ Summary of changes:
 | 22/05/2026 | `e925029` | fix: remove duplicate Express CORS middleware — Caddy already handles CORS at the edge. Resolves login "Unexpected end of JSON input" error caused by conflicting CORS headers (wildcard + credentials). |
 | 22/05/2026 | `d580daa` | fix: move CREATE INDEX after tab_id migration to prevent crash on old databases. Backend was crash-looping with `SqliteError: no such column: tab_id` because `CREATE INDEX idx_projects_tab` ran before the `ALTER TABLE` migration that adds `tab_id` to existing databases. |
 
+
+
+---
+
+
+
+# Build Issues
+
+22/05 1640 Series 100
+
+  101. [x] Tab names need to be editable. It should be a simple "click the name" to edit.
+  102. [x] Unable to toggle public/private setting of tab
+  103. [x] Front project card should not be see through unless another card is selected and brought forward
+  104. [x] Tab bar should be at very top. "Project Stack should be below and tab bar and prepend the tabs name ("Work" Project Stack or "Home" Project Stack)

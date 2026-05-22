@@ -117,7 +117,7 @@ const SortableTabItem = memo(function SortableTabItem({
       ) : (
         <span
           className="truncate max-w-[120px]"
-          onDoubleClick={() => isAdmin && setIsEditing(true)}
+          onClick={() => isAdmin && setIsEditing(true)}
         >
           {tab.name}
         </span>
@@ -198,7 +198,7 @@ export const TabBar = memo(function TabBar({ isAdmin }: TabBarProps) {
   }, [setActiveTabId])
 
   const handleToggleVisibility = useCallback((id: string, visibility: 'public' | 'private') => {
-    updateTabById(id, { visibility: visibility === 'public' ? 'private' : 'public' })
+    updateTabById(id, { visibility })
   }, [updateTabById])
 
   const handleDelete = useCallback((id: string) => {

@@ -95,8 +95,12 @@ const SortableProjectCard = memo(function SortableProjectCard({
   }
 
   const handleClick = useCallback(() => {
-    onBringToFront(project.id)
-  }, [onBringToFront, project.id])
+    if (frontProjectId === project.id) {
+      onBringToFront(null)
+    } else {
+      onBringToFront(project.id)
+    }
+  }, [onBringToFront, project.id, frontProjectId])
 
   return (
     <div
