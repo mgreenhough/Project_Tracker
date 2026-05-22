@@ -255,13 +255,19 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      // Capture the current order BEFORE setActiveId triggers re-render/effect
-      const currentOrder = orderedProjects.map((p) => p.id)
-      onReorder(currentOrder)
+      // Use functional update to read the latest orderedProjects state
+      setOrderedProjects((currentItems) => {
+        const oldIndex = currentItems.findIndex((p) => p.id === active.id)
+        const newIndex = currentItems.findIndex((p) => p.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return currentItems
+        const newOrder = arrayMove(currentItems, oldIndex, newIndex)
+        onReorder(newOrder.map((p) => p.id))
+        return newOrder
+      })
     }
 
     setActiveId(null)
-  }, [onReorder, orderedProjects])
+  }, [onReorder])
 
   return (
     <div className="relative">
