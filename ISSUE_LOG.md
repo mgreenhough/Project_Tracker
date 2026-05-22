@@ -80,4 +80,4 @@ Committed 1759: 5bfbf8a
 
 Committed 1821: 659b375
 
-    206. [] Clicking on tab immedietly opens name edit. edit should only open after second click.
+    206. [] Clicking on tab immediately opens name edit. edit should only open after second click.

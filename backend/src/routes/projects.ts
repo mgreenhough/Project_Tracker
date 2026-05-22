@@ -150,7 +150,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
       is_public = COALESCE(?, is_public),
       is_archived = COALESCE(?, is_archived),
       due_date = ?,
-      tab_id = ?,
+      tab_id = COALESCE(?, tab_id),
       updated_at = ?
     WHERE id = ?
   `).run(
@@ -160,7 +160,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
     data.isPublic !== undefined ? (data.isPublic ? 1 : 0) : null,
     data.isArchived !== undefined ? (data.isArchived ? 1 : 0) : null,
     data.dueDate !== undefined ? data.dueDate : undefined,
-    data.tabId !== undefined ? data.tabId : undefined,
+    data.tabId !== undefined ? data.tabId : null,
     now,
     id
   );
