@@ -129,13 +129,11 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
 
-  // Sync local order with prop changes - only when actual order changes
+  // Sync local order with prop changes - only when actual order changes and not dragging
   const projectIdsKey = projects.map((p) => p.id).join(',')
   useEffect(() => {
-    if (!activeId) {
-      setOrderedProjects(projects)
-    }
-  }, [projectIdsKey, activeId])
+    setOrderedProjects(projects)
+  }, [projectIdsKey])
 
   // Recompute auto-zoom when project count changes on mobile
   useEffect(() => {
@@ -255,12 +253,14 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
-    setActiveId(null)
 
     if (over && active.id !== over.id) {
-      // orderedProjects already has the correct order from handleDragOver
-      onReorder(orderedProjects.map((p) => p.id))
+      // Capture the current order BEFORE setActiveId triggers re-render/effect
+      const currentOrder = orderedProjects.map((p) => p.id)
+      onReorder(currentOrder)
     }
+
+    setActiveId(null)
   }, [onReorder, orderedProjects])
 
   return (

@@ -92,4 +92,8 @@ Committed 2042: ae2d105
 
 Committed 2106: e16c23f
 
-    504. [] STILL NOT FUCKING WORKING!!!!!!! REFACTOR??????
+    504. [x] STILL NOT FUCKING WORKING!!!!!!! REFACTOR??????
+
+Committed 2120: 22472f6
+
+    604. [] NOPE! FUCKING WORSE NOW!!!!!!!!!!!
