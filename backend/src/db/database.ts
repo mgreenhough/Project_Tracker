@@ -55,14 +55,6 @@ export function initDb(overrideDb?: Database.Database): void {
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
-
-    CREATE INDEX IF NOT EXISTS idx_projects_priority ON projects(priority_index);
-    CREATE INDEX IF NOT EXISTS idx_projects_archived ON projects(is_archived);
-    CREATE INDEX IF NOT EXISTS idx_projects_deleted ON projects(is_deleted);
-    CREATE INDEX IF NOT EXISTS idx_projects_tab ON projects(tab_id);
-    CREATE INDEX IF NOT EXISTS idx_steps_project ON steps(project_id);
-    CREATE INDEX IF NOT EXISTS idx_steps_order ON steps(step_order);
-    CREATE INDEX IF NOT EXISTS idx_tabs_sort ON tabs(sort_order);
   `);
 
   // Migration: add tab_id column to existing projects table (pre-schema v2)
@@ -71,6 +63,16 @@ export function initDb(overrideDb?: Database.Database): void {
   if (!hasTabId) {
     db.exec(`ALTER TABLE projects ADD COLUMN tab_id TEXT REFERENCES tabs(id) ON DELETE SET NULL;`);
   }
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_projects_priority ON projects(priority_index);
+    CREATE INDEX IF NOT EXISTS idx_projects_archived ON projects(is_archived);
+    CREATE INDEX IF NOT EXISTS idx_projects_deleted ON projects(is_deleted);
+    CREATE INDEX IF NOT EXISTS idx_projects_tab ON projects(tab_id);
+    CREATE INDEX IF NOT EXISTS idx_steps_project ON steps(project_id);
+    CREATE INDEX IF NOT EXISTS idx_steps_order ON steps(step_order);
+    CREATE INDEX IF NOT EXISTS idx_tabs_sort ON tabs(sort_order);
+  `);
 
   // Migration: create default "General" tab and assign orphaned projects to it
   const existingTabs = db.prepare(`SELECT COUNT(*) as count FROM tabs`).get() as { count: number };
