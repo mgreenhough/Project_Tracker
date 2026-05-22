@@ -129,10 +129,11 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
 
-  // Sync local order with prop changes
+  // Sync local order with prop changes - only when actual order changes
+  const projectIdsKey = projects.map((p) => p.id).join(',')
   useEffect(() => {
     setOrderedProjects(projects)
-  }, [projects])
+  }, [projectIdsKey])
 
   // Recompute auto-zoom when project count changes on mobile
   useEffect(() => {

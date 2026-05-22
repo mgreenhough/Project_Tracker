@@ -70,6 +70,16 @@ const SortableTabItem = memo(function SortableTabItem({
     }
   }, [handleConfirm, tab.name])
 
+  const handleNameClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAdmin) return
+    if (isActive) {
+      setIsEditing(true)
+    } else {
+      onSelect(tab.id)
+    }
+  }, [isAdmin, isActive, onSelect, tab.id])
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -117,7 +127,7 @@ const SortableTabItem = memo(function SortableTabItem({
       ) : (
         <span
           className="truncate max-w-[120px]"
-          onClick={() => isAdmin && setIsEditing(true)}
+          onClick={handleNameClick}
         >
           {tab.name}
         </span>
