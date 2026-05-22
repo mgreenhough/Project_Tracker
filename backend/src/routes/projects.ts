@@ -146,7 +146,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
     UPDATE projects SET
       title = COALESCE(?, title),
       description = COALESCE(?, description),
-      priority_index = COALESCE(?, priority_index),
+      priority_index = CASE WHEN ? IS NOT NULL THEN ? ELSE priority_index END,
       is_public = COALESCE(?, is_public),
       is_archived = COALESCE(?, is_archived),
       due_date = ?,
@@ -156,7 +156,8 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
   `).run(
     data.title ?? null,
     data.description ?? null,
-    data.priorityIndex ?? null,
+    data.priorityIndex !== undefined ? data.priorityIndex : null,
+    data.priorityIndex !== undefined ? data.priorityIndex : null,
     data.isPublic !== undefined ? (data.isPublic ? 1 : 0) : null,
     data.isArchived !== undefined ? (data.isArchived ? 1 : 0) : null,
     data.dueDate !== undefined ? data.dueDate : undefined,
