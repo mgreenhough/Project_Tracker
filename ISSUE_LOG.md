@@ -79,3 +79,5 @@ Committed 1759: 5bfbf8a
     205. [x] Creating new step on selected project De-selects project! this may be a change you implemented when misunderstanding issue 103 of UPGRADES.md earlier. A project should only be deselected when clicking outside of the project! not when clicking the project again! - Fixed in commit 659b375
 
 Committed 1821: 659b375
+
+    206. [] Clicking on tab immedietly opens name edit. edit should only open after second click.

@@ -3,12 +3,12 @@ import { differenceInCalendarDays, parse } from 'date-fns'
 
 export const activeProjectsSorted = (projects: Project[], activeTabId?: string | null): Project[] =>
   projects
-    .filter((p) => !p.isArchived && !p.isDeleted && p.isPublic && (!activeTabId || p.tabId === activeTabId))
+    .filter((p) => !p.isArchived && !p.isDeleted && p.isPublic && (!activeTabId || p.tabId === activeTabId || p.tabId === null))
     .sort((a, b) => a.priorityIndex - b.priorityIndex)
 
 export const archivedProjectsSorted = (projects: Project[], activeTabId?: string | null): Project[] =>
   projects
-    .filter((p) => p.isArchived && !p.isDeleted && (!activeTabId || p.tabId === activeTabId))
+    .filter((p) => p.isArchived && !p.isDeleted && (!activeTabId || p.tabId === activeTabId || p.tabId === null))
     .sort((a, b) => a.priorityIndex - b.priorityIndex)
 
 export type UrgencyLevel = 'high' | 'medium' | 'low'
