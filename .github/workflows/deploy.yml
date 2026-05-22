@@ -81,6 +81,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
+          timeout: 60s
+          command_timeout: 30m
           script_stop: true
           script: |
             set -e

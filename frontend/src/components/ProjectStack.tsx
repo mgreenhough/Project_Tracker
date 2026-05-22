@@ -255,7 +255,7 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     const { active, over } = event
     console.log('[handleDragEnd] active=', active.id, 'over=', over?.id)
 
-    if (over && active.id !== over.id) {
+    if (over) {
       // orderedProjects already has the correct live-reordered state from handleDragOver.
       // Read it via functional update to avoid stale closure, then pass IDs to onReorder.
       setOrderedProjects((currentItems) => {
