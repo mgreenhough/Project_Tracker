@@ -40,15 +40,11 @@ async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Res
   return res
 }
 
-// Public (with optional auth for admin/private projects)
+// Public
 export async function fetchProjects(tabId?: string): Promise<{ projects: any[] }> {
   const url = new URL(`${API_URL}/projects`)
   if (tabId) url.searchParams.set('tabId', tabId)
-  const res = await fetch(url.toString(), {
-    headers: {
-      ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {})
-    }
-  })
+  const res = await fetch(url.toString())
   if (!res.ok) throw new Error('Failed to fetch projects')
   return res.json()
 }

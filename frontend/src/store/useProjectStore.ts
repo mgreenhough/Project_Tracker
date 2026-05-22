@@ -176,7 +176,7 @@ export const useProjectStore = create<ProjectStore>()(
         }
       },
 
-      reorderProjects: async (orderedIds) => {
+      reorderProjects: (orderedIds) => {
         set((state) => {
           const map = new Map(state.projects.map((p) => [p.id, p]))
           const reordered = orderedIds
@@ -189,16 +189,9 @@ export const useProjectStore = create<ProjectStore>()(
         })
 
         if (get().isAdmin) {
-          try {
-            await Promise.all(
-              orderedIds.map((id, index) =>
-                updateProjectApi(id, { priorityIndex: index })
-              )
-            )
-          } catch (err: any) {
-            set({ error: err.message || 'Failed to save project order' })
-            throw err
-          }
+          orderedIds.forEach((id, index) => {
+            updateProjectApi(id, { priorityIndex: index }).catch(() => {})
+          })
         }
       },
 

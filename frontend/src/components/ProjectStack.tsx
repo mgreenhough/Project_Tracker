@@ -45,7 +45,7 @@ function mapDisplayToZoom(display: number, autoZoom: number): number {
 interface ProjectStackProps {
   projects: Project[]
   isAdmin: boolean
-  onReorder: (orderedIds: string[]) => void | Promise<void>
+  onReorder: (orderedIds: string[]) => void
 }
 
 const SortableProjectCard = memo(function SortableProjectCard({
