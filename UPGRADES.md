@@ -1,8 +1,6 @@
 # UPGRADES
 
-22/05 
-
-101. TABS
+# 1. TABS
 
     at the moment there is ONE project stack. we should integrate a tab system like a browser where by you can ADD/REMOVE tabs to create multiple project stacks (work, home, hobbie etc) These tabs should also have a selector to select wether they are publicly viewable or not (work: public, home: private, hobbie: private etc)
 
@@ -144,3 +142,14 @@ Summary of changes:
   102. [x] Unable to toggle public/private setting of tab
   103. [x] Front project card should not be see through unless another card is selected and brought forward
   104. [x] Tab bar should be at very top. "Project Stack should be below and tab bar and prepend the tabs name ("Work" Project Stack or "Home" Project Stack)
+
+Committed b5324c0 with message "fix: resolve all 100 series issues"
+
+
+---
+
+
+
+# 2. Extra Users
+
+  Investigate the codebase, we already have a login, is it possible to host multiple users on the server? If so create a step by step build log with checkboxes to implement multi user.

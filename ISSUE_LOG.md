@@ -59,12 +59,16 @@ remove ?v=2 to the favicon URL in frontend/index.html:5.
 
 2. [x?] Drag project function not working on mobile "failed to excecute 'json' on 'Response': Unexpected end of JSON input
 
-3. [] Remove scroll wheel function from zoom and apply it to vertical scroll. Apply 'ctrl' + scroll to zoom instead.
+3. [x] Remove scroll wheel function from zoom and apply it to vertical scroll. Apply 'ctrl' + scroll to zoom instead.
 
 
 
 FOR FUTURE ISSUES, USE A NUMBERING SYSTEM: FIRST SET OFF ISSUES STARTS AT 100, 101, 102. NEXT SET 200.... SO THAT YOU CAN CALL THEM EASILY.
 
-# Issues 2/05 1054
+# Issues 
 
-201. [] Drag not working on mobile. drag should work by pressing and holding drag, drag to new position, release to drop in new position. At the moment clicking on drag seems to click but has no response.
+22/05 1727 series 200
+
+    201. [x] Drag not working on mobile. drag should work by pressing and holding drag, drag to new position, release to drop in new position. At the moment clicking on drag seems to click but has no response.
+    202. [x] Archived projects currently position on right hand end of archive stack. They should drop into left most position and bump stack to the right so as to show the most recently completed project first.
+    203. [x] Tab bar only showing one tab on mobile when there are currently two saved

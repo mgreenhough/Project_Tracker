@@ -49,9 +49,9 @@ export async function fetchProjects(tabId?: string): Promise<{ projects: any[] }
   return res.json()
 }
 
-// Public tabs — only returns public tabs for unauthenticated users
+// Public tabs — returns all tabs for authenticated users, only public tabs for unauthenticated
 export async function fetchTabs(): Promise<{ tabs: any[] }> {
-  const res = await fetch(`${API_URL}/tabs`)
+  const res = await fetchWithAuth('/tabs')
   if (!res.ok) throw new Error('Failed to fetch tabs')
   return res.json()
 }

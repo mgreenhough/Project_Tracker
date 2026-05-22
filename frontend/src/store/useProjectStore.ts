@@ -143,14 +143,20 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       archiveProject: (id) => {
+        const archivedProjects = get().projects.filter((p) => p.isArchived && !p.isDeleted)
+        const minPriority = archivedProjects.length > 0
+          ? Math.min(...archivedProjects.map((p) => p.priorityIndex))
+          : 0
+        const newPriority = minPriority - 1
+
         set((state) => ({
           projects: state.projects.map((p) =>
-            p.id === id ? { ...p, isArchived: true, updatedAt: now() } : p
+            p.id === id ? { ...p, isArchived: true, priorityIndex: newPriority, updatedAt: now() } : p
           ),
         }))
 
         if (get().isAdmin) {
-          updateProjectApi(id, { isArchived: true }).catch((err: any) => {
+          updateProjectApi(id, { isArchived: true, priorityIndex: newPriority }).catch((err: any) => {
             set({ error: err.message || 'Failed to archive project' })
           })
         }

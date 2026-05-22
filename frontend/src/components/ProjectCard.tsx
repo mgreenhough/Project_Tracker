@@ -28,6 +28,7 @@ interface ProjectCardProps {
   isAdmin: boolean
   isArchived?: boolean
   isFront?: boolean
+  isLeftmost?: boolean
   dragHandleProps?: {
     attributes: DraggableAttributes
     listeners: SyntheticListenerMap | undefined
@@ -45,7 +46,7 @@ function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number)
   )
 }
 
-export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchived = false, isFront = false, dragHandleProps }: ProjectCardProps) {
+export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchived = false, isFront = false, isLeftmost = false, dragHandleProps }: ProjectCardProps) {
   const reorderSteps = useProjectStore((s) => s.reorderSteps)
   const updateProject = useProjectStore((s) => s.updateProject)
   const addStep = useProjectStore((s) => s.addStep)
@@ -181,7 +182,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
         ${
           isArchived
             ? 'bg-gray-900/40 border-neon-green/60 opacity-60 grayscale-[0.3]'
-            : isFront
+            : isFront || isLeftmost
               ? `bg-gray-950 ${urgencyBorderColor(highestUrgency)}`
               : `bg-gray-900/80 ${urgencyBorderColor(highestUrgency)} ${urgencyBgColor(highestUrgency)}`
         }

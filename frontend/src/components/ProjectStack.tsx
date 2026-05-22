@@ -95,12 +95,8 @@ const SortableProjectCard = memo(function SortableProjectCard({
   }
 
   const handleClick = useCallback(() => {
-    if (frontProjectId === project.id) {
-      onBringToFront(null)
-    } else {
-      onBringToFront(project.id)
-    }
-  }, [onBringToFront, project.id, frontProjectId])
+    onBringToFront(project.id)
+  }, [onBringToFront, project.id])
 
   return (
     <div
@@ -115,6 +111,7 @@ const SortableProjectCard = memo(function SortableProjectCard({
         isAdmin={isAdmin}
         isArchived={false}
         isFront={isFront}
+        isLeftmost={index === 0}
         dragHandleProps={isAdmin ? { attributes, listeners } : undefined}
       />
     </div>
