@@ -95,8 +95,10 @@ const SortableProjectCard = memo(function SortableProjectCard({
   }
 
   const handleClick = useCallback(() => {
-    onBringToFront(project.id)
-  }, [onBringToFront, project.id])
+    if (frontProjectId !== project.id) {
+      onBringToFront(project.id)
+    }
+  }, [onBringToFront, project.id, frontProjectId])
 
   return (
     <div
@@ -253,12 +255,16 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
     setActiveId(null)
 
     if (over && active.id !== over.id) {
-      const oldIndex = orderedProjects.findIndex((p) => p.id === active.id)
-      const newIndex = orderedProjects.findIndex((p) => p.id === over.id)
-      const reordered = arrayMove(orderedProjects, oldIndex, newIndex)
-      onReorder(reordered.map((p) => p.id))
+      setOrderedProjects((items) => {
+        const oldIndex = items.findIndex((p) => p.id === active.id)
+        const newIndex = items.findIndex((p) => p.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return items
+        const reordered = arrayMove(items, oldIndex, newIndex)
+        onReorder(reordered.map((p) => p.id))
+        return reordered
+      })
     }
-  }, [orderedProjects, onReorder])
+  }, [onReorder])
 
   return (
     <div className="relative">

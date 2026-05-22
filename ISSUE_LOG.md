@@ -72,3 +72,9 @@ FOR FUTURE ISSUES, USE A NUMBERING SYSTEM: FIRST SET OFF ISSUES STARTS AT 100, 1
     201. [x] Drag not working on mobile. drag should work by pressing and holding drag, drag to new position, release to drop in new position. At the moment clicking on drag seems to click but has no response.
     202. [x] Archived projects currently position on right hand end of archive stack. They should drop into left most position and bump stack to the right so as to show the most recently completed project first.
     203. [x] Tab bar only showing one tab on mobile when there are currently two saved
+
+Committed 1759: 5bfbf8a
+
+    204. [x] Position of dragged projects not saving. They keep reverting to original positions
+    205. [x] Creating new step on selected project De-selects project! this may be a change you implemented when misunderstanding issue 103 of UPGRADES.md earlier. A project should only be deselected when clicking outside of the project! not when clicking the project again!
+
