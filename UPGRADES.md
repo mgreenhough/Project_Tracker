@@ -118,3 +118,14 @@ Summary of changes:
 - `UPGRADES.md` — Updated Phase 4 checklist and added detailed summary of all changes.
 
 ### Status: Complete
+
+---
+
+## Build Reference Log
+
+| Date | Commit Hash | Description |
+|------|-------------|-------------|
+| 22/05/2026 | `aa5a748` | fix: project drag function on mobile and completed major TAB upgrade |
+| 22/05/2026 | `c019ce0` | fix: add missing CORS middleware to backend server - deployment hotfix |
+
+> **Revert note:** To revert this push, run: `git revert aa5a748` or `git reset --hard aa5a748^` (if not yet pulled by others).
