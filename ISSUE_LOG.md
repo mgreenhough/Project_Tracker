@@ -96,4 +96,16 @@ Committed 2106: e16c23f
 
 Committed 2120: 22472f6
 
-    604. [] NOPE! FUCKING WORSE NOW!!!!!!!!!!!
+    604. [x] NOPE! FUCKING WORSE NOW!!!!!!!!!!!
+
+Committed 2126: c1e14df
+
+    704. [x] Back to not saving after refresh
+
+Committed 2133: 497cb7d
+
+    804. [x] And what do you know!...... STILL FUCKED!!!!!!!!!!!!!!!!!
+
+Committed 2154: 2111ec9
+
+    904. [] NO CHANGE!

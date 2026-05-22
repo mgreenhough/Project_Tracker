@@ -177,6 +177,7 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       reorderProjects: async (orderedIds) => {
+        console.log('[reorderProjects] called with', orderedIds.length, 'ids, isAdmin=', get().isAdmin)
         set((state) => {
           const map = new Map(state.projects.map((p) => [p.id, p]))
           const reordered = orderedIds
@@ -189,16 +190,21 @@ export const useProjectStore = create<ProjectStore>()(
         })
 
         if (get().isAdmin) {
+          console.log('[reorderProjects] isAdmin=true, sending API calls...')
           try {
             await Promise.all(
               orderedIds.map((id, index) =>
                 updateProjectApi(id, { priorityIndex: index })
               )
             )
+            console.log('[reorderProjects] API calls succeeded')
           } catch (err: any) {
+            console.error('[reorderProjects] API calls failed:', err)
             set({ error: err.message || 'Failed to save project order' })
             throw err
           }
+        } else {
+          console.log('[reorderProjects] isAdmin=false, SKIPPING API calls')
         }
       },
 

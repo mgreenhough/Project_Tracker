@@ -253,12 +253,15 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
+    console.log('[handleDragEnd] active=', active.id, 'over=', over?.id)
 
     if (over && active.id !== over.id) {
       // orderedProjects already has the correct live-reordered state from handleDragOver.
       // Read it via functional update to avoid stale closure, then pass IDs to onReorder.
       setOrderedProjects((currentItems) => {
-        onReorder(currentItems.map((p) => p.id))
+        const ids = currentItems.map((p) => p.id)
+        console.log('[handleDragEnd] calling onReorder with ids:', ids)
+        onReorder(ids)
         return currentItems
       })
     }
