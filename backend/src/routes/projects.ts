@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db/database.js';
-import { requireAuth, AuthRequest } from '../middleware/auth.js';
+import { requireAuth, optionalAuth, AuthRequest } from '../middleware/auth.js';
 import { projectCreateSchema, projectUpdateSchema, stepCreateSchema, stepUpdateSchema } from '../validation/schemas.js';
 
 const router = Router();
@@ -51,12 +51,17 @@ function rowToStep(row: any) {
   };
 }
 
-// Public GET /projects — returns all non-deleted public projects with steps
-router.get('/', (req, res) => {
+// GET /projects — public returns public projects; authenticated returns all (including private)
+router.get('/', optionalAuth, (req: AuthRequest, res) => {
   const tabId = req.query.tabId as string | undefined;
+  const isAuthenticated = !!req.user;
 
-  let sql = `SELECT * FROM projects WHERE is_deleted = 0 AND is_public = 1`;
+  let sql = `SELECT * FROM projects WHERE is_deleted = 0`;
   const params: any[] = [];
+
+  if (!isAuthenticated) {
+    sql += ` AND is_public = 1`;
+  }
 
   if (tabId) {
     sql += ` AND tab_id = ?`;
@@ -146,7 +151,7 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
     UPDATE projects SET
       title = COALESCE(?, title),
       description = COALESCE(?, description),
-      priority_index = COALESCE(?, priority_index),
+      priority_index = CASE WHEN ? IS NOT NULL THEN ? ELSE priority_index END,
       is_public = COALESCE(?, is_public),
       is_archived = COALESCE(?, is_archived),
       due_date = ?,
@@ -156,7 +161,8 @@ router.put('/:id', requireAuth, (req: AuthRequest, res) => {
   `).run(
     data.title ?? null,
     data.description ?? null,
-    data.priorityIndex ?? null,
+    data.priorityIndex !== undefined ? data.priorityIndex : null,
+    data.priorityIndex !== undefined ? data.priorityIndex : null,
     data.isPublic !== undefined ? (data.isPublic ? 1 : 0) : null,
     data.isArchived !== undefined ? (data.isArchived ? 1 : 0) : null,
     data.dueDate !== undefined ? data.dueDate : undefined,

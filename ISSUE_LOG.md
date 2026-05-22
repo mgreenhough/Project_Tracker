@@ -75,6 +75,7 @@ FOR FUTURE ISSUES, USE A NUMBERING SYSTEM: FIRST SET OFF ISSUES STARTS AT 100, 1
 
 Committed 1759: 5bfbf8a
 
-    204. [x] Position of dragged projects not saving. They keep reverting to original positions
-    205. [x] Creating new step on selected project De-selects project! this may be a change you implemented when misunderstanding issue 103 of UPGRADES.md earlier. A project should only be deselected when clicking outside of the project! not when clicking the project again!
+    204. [x] Position of dragged projects not saving. They keep reverting to original positions - Fixed in commit 659b375
+    205. [x] Creating new step on selected project De-selects project! this may be a change you implemented when misunderstanding issue 103 of UPGRADES.md earlier. A project should only be deselected when clicking outside of the project! not when clicking the project again! - Fixed in commit 659b375
 
+Committed 1821: 659b375
