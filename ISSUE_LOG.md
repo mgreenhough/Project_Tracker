@@ -108,5 +108,19 @@ Committed 2133: 497cb7d
 
 Committed 2154: 2111ec9
 
-    904. [] NO CHANGE!
+    904. [x] NO CHANGE!
     Commit dcf71e6 pushed to add data logging to get to the bottom of API's not being called and database not updating.
+
+Committed 2305: ad4432e
+
+    207. [] Project due dates now broken. were previously working!
+
+# Issues 24/05/26 1000 Series
+
+1001. [x] Project edits aren't saving live. They are only updating after refresh. So they are obviously being save but they're not rendering. This is global too, New projects, task edits, status... everything
+
+1002. [x] zoom setting resets to 100% on return to tab. current zoom setting should be saved and be the same after leaving and returning to tab
+
+1003. [] Add issue_log.md and issue2.md to ALL gitignores
+
+ 

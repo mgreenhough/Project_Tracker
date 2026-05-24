@@ -23,6 +23,25 @@ import { memo, useState, useRef, useCallback, useEffect } from 'react'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '../types'
 
+const ZOOM_STORAGE_KEY = 'project-stack-zoom'
+
+function getStoredZoom(): number {
+  try {
+    const raw = localStorage.getItem(ZOOM_STORAGE_KEY)
+    if (raw !== null) {
+      const val = parseFloat(raw)
+      if (!isNaN(val) && val >= 0 && val <= 1) return val
+    }
+  } catch {}
+  return 1
+}
+
+function setStoredZoom(val: number) {
+  try {
+    localStorage.setItem(ZOOM_STORAGE_KEY, String(val))
+  } catch {}
+}
+
 function computeAutoZoom(projectCount: number): number {
   const isMobile = window.innerWidth < 768
   const isPortrait = window.innerHeight > window.innerWidth
@@ -34,8 +53,6 @@ function computeAutoZoom(projectCount: number): number {
   }
   return 0
 }
-
-
 
 function mapDisplayToZoom(display: number, autoZoom: number): number {
   if (autoZoom <= 0) return display
@@ -122,18 +139,30 @@ const SortableProjectCard = memo(function SortableProjectCard({
 
 export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onReorder }: ProjectStackProps) {
   const autoZoom = computeAutoZoom(projects.length)
-  const [displayZoom, setDisplayZoom] = useState(1) // 0-1, user-facing
+  const [displayZoom, setDisplayZoom] = useState(() => getStoredZoom())
   const [activeId, setActiveId] = useState<string | null>(null)
   const [orderedProjects, setOrderedProjects] = useState<Project[]>(projects)
   const [frontProjectId, setFrontProjectId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const lastPinchDist = useRef<number | null>(null)
 
-  // Sync local order with prop changes - only when actual order changes and not dragging
-  const projectIdsKey = projects.map((p) => p.id).join(',')
+  // Sync local order with prop changes - merge updated data while preserving current order
+  const projectDataKey = projects.map((p) => `${p.id}:${p.updatedAt}`).join(',')
   useEffect(() => {
-    setOrderedProjects(projects)
-  }, [projectIdsKey])
+    setOrderedProjects((current) => {
+      const currentIds = current.map((p) => p.id)
+      const newIds = projects.map((p) => p.id)
+      // If order changed, use new order
+      if (JSON.stringify(currentIds) !== JSON.stringify(newIds)) {
+        return projects
+      }
+      // Same order: merge updated data so live edits render
+      return current.map((p) => {
+        const updated = projects.find((np) => np.id === p.id)
+        return updated || p
+      })
+    })
+  }, [projectDataKey])
 
   // Recompute auto-zoom when project count changes on mobile
   useEffect(() => {
@@ -168,7 +197,9 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
       e.preventDefault()
       setDisplayZoom((prev) => {
         const delta = e.deltaY > 0 ? 0.05 : -0.05
-        return Math.min(1, Math.max(0, prev + delta))
+        const next = Math.min(1, Math.max(0, prev + delta))
+        setStoredZoom(next)
+        return next
       })
     }
     // Without Ctrl/Meta, let the browser handle native vertical scrolling
@@ -197,7 +228,11 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
       const dist = Math.sqrt(dx * dx + dy * dy)
       const delta = (dist - lastPinchDist.current) / 400
       lastPinchDist.current = dist
-      setDisplayZoom((prev) => Math.min(1, Math.max(0, prev + delta)))
+      setDisplayZoom((prev) => {
+        const next = Math.min(1, Math.max(0, prev + delta))
+        setStoredZoom(next)
+        return next
+      })
     }
   }, [])
 
@@ -279,7 +314,11 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
           max={1}
           step={0.01}
           value={displayZoom}
-          onChange={(e) => setDisplayZoom(parseFloat(e.target.value))}
+          onChange={(e) => {
+            const val = parseFloat(e.target.value)
+            setDisplayZoom(val)
+            setStoredZoom(val)
+          }}
           className="w-32 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-neon-blue"
         />
         <span className="text-xs text-gray-500 w-8">{Math.round(displayZoom * 100)}%</span>
