@@ -19,6 +19,7 @@ interface ProjectStoreState {
   error: string | null
   pendingStepCreates: Map<string, Promise<string>>
   _pendingCreateResolvers: Map<string, (id: string) => void>
+  _clientStepIds: Set<string> // Track client-side step IDs that haven't been created on server yet
 }
 
 type ProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'steps' | 'priorityIndex' | 'isDeleted'>
@@ -64,6 +65,7 @@ export const useProjectStore = create<ProjectStore>()(
       // Map of client temporary step id -> promise that resolves to server step id
       pendingStepCreates: new Map<string, Promise<string>>(),
       _pendingCreateResolvers: new Map<string, (id: string) => void>(),
+      _clientStepIds: new Set<string>(),
       projects: [],
       isAdmin: false,
       isLoading: false,
@@ -228,6 +230,9 @@ export const useProjectStore = create<ProjectStore>()(
           updatedAt: now(),
         }
         
+        // Track this as a client-side ID
+        get()._clientStepIds.add(newStep.id)
+        
         // Add step to local state immediately
         set((state) => ({
           projects: state.projects.map((p) =>
@@ -276,6 +281,7 @@ export const useProjectStore = create<ProjectStore>()(
             }
             get()._pendingCreateResolvers.delete(newStep.id)
             get().pendingStepCreates.delete(newStep.id)
+            get()._clientStepIds.delete(newStep.id) // Remove from client IDs since it's now on server
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
             console.error('[useProjectStore] addStep failed', err)
@@ -309,8 +315,8 @@ export const useProjectStore = create<ProjectStore>()(
               const project = get().projects.find((p) => p.id === projectId)
               const step = project?.steps.find((s) => s.id === stepId)
               
-              // If step has a UUID format (client-side ID) and no pending create, it needs to be created first
-              const isClientId = stepId.includes('-') && stepId.length === 36
+              // Check if this is a client-side ID that hasn't been created on server yet
+              const isClientId = get()._clientStepIds.has(stepId)
               const hasPendingCreate = get().pendingStepCreates.has(stepId)
               
               if (isClientId && !hasPendingCreate && step) {
@@ -361,6 +367,7 @@ export const useProjectStore = create<ProjectStore>()(
                 }
                 get()._pendingCreateResolvers.delete(stepId)
                 get().pendingStepCreates.delete(stepId)
+                get()._clientStepIds.delete(stepId) // Remove from client IDs since it's now on server
                 // Step is now created with all updates applied - no need to call update API
                 return
               }

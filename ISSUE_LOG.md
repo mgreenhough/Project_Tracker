@@ -172,3 +172,7 @@ Committed 2237: 1683d5f
 1008.7 [x] Error gone but still requires two Enters! Root cause: The auto-enter edit mode useEffect has `editingContent` in dependency array. When user presses Enter, `setEditingContent(false)` triggers the useEffect, which sees `step.content === ''` (state hasn't updated yet) and re-enters edit mode. Solution: Use ref to track if we've already auto-entered edit mode for this step, preventing re-entry until step gets content.
 
 Committed 2240: da683c3
+
+1008.8 [x] STILL requires two Enters! First Enter selects all text, second Enter exits. Root cause: When user presses Enter, updateStep causes a re-render before editingContent becomes false. The focus useEffect runs and calls select() on the input, selecting all text. Solution: Only call select() for empty steps (new steps), not when content exists. This prevents text selection on state updates.
+
+Committed 2245: 7dba42a
