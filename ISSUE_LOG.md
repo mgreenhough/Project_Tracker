@@ -176,3 +176,8 @@ Committed 2240: da683c3
 1008.8 [x] STILL requires two Enters! First Enter selects all text, second Enter exits. Root cause: When user presses Enter, updateStep causes a re-render before editingContent becomes false. The focus useEffect runs and calls select() on the input, selecting all text. Solution: Only call select() for empty steps (new steps), not when content exists. This prevents text selection on state updates.
 
 Committed 2245: 7dba42a
+
+1009. [x] "Delete step" causing intermittent failure in not deleting step and producing "step not found" error.
+"Step not found for update" errors appearing in backend logs when updating steps. Root cause: The isClientId check used `stepId.includes('-') && stepId.length === 36`, which incorrectly identified server-generated UUIDs as client IDs, causing the system to try creating steps that already existed on the server. Solution: Added `_clientStepIds` Set to explicitly track client-side step IDs. IDs are added when steps are created locally and removed when they're successfully created on the server. This ensures only truly client-side steps trigger server creation in updateStep.
+
+Committed 2305: db595e0
