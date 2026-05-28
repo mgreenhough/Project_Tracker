@@ -56,7 +56,12 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   const steps = useMemo(() => [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder), [project.steps])
 
   const projectUrgency = useMemo(() => urgencyLevel(project.dueDate), [project.dueDate])
-  const stepUrgencies = useMemo(() => steps.map((s) => urgencyLevel(s.dueDate)), [steps])
+  const stepUrgencies = useMemo(
+    () => steps
+      .filter((s) => s.status !== 'COMPLETE')
+      .map((s) => urgencyLevel(s.dueDate)),
+    [steps]
+  )
   const highestUrgency = useMemo(() => {
     const all = [projectUrgency, ...stepUrgencies].filter(Boolean) as Array<'high' | 'medium' | 'low'>
     if (all.includes('high')) return 'high'

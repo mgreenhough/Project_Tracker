@@ -109,6 +109,18 @@ pm2 startup systemd      # Configure auto-start
 
 ---
 
+## Server Error Logging
+
+- Backend errors are saved to `backend/logs/error-YYYY-MM-DD.log`
+- Default retention is `30` days via `LOG_RETENTION_DAYS`
+- Logs are ignored by git because `backend/.gitignore` includes `*.log`
+- Authenticated users can access logs through the backend API:
+  - `GET /api/logs` — list available log files
+  - `GET /api/logs?date=YYYY-MM-DD` — fetch that day's log contents
+- The log API requires a valid JWT Bearer token in the `Authorization` header.
+
+---
+
 ## License
 
 MIT

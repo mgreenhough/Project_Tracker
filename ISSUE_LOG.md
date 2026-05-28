@@ -121,6 +121,18 @@ Committed 2305: ad4432e
 
 1002. [x] zoom setting resets to 100% on return to tab. current zoom setting should be saved and be the same after leaving and returning to tab
 
-1003. [] Add issue_log.md and issue2.md to ALL gitignores
+1003. [x] Add issue_log.md and issue2.md to ALL gitignores
+
+Committed 1749: 3702b0a
+
+# 28/05/26
+
+1004. [x] Project border highlighting should go back to defult or next due date if task with duedate has been marked as complete. Completed task with due date should have no influence over project boider coulouring.
+
+1005. [x] Getting glitches when entering steps, recieving "failed to update step" error when entering step text. typed text dissapears.
+
+1006. [x] Other intermittent, glitchy errors popping up ('failed to fetch" "expected json somthing") can we get the error log and interrogate them now that we are at a point where everything seems to be functioning as required? Fixed response parsing on delete step / empty-body API responses and added console error logging for API failures.
+
+1007. [x] Added backend error log files and authenticated log endpoint at `/api/logs`; documented server log location and access method.
 
  

@@ -4,6 +4,35 @@ function getAccessToken(): string | null {
   return localStorage.getItem('accessToken')
 }
 
+async function parseJsonBody<T = any>(res: Response): Promise<T | null | string> {
+  if (res.status === 204) return null
+  const text = await res.text().catch(() => '')
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
+}
+
+async function parseErrorBody(res: Response, defaultMessage: string): Promise<Error> {
+  const body = await parseJsonBody(res)
+  let message = defaultMessage
+  if (body) {
+    if (typeof body === 'string') {
+      message = body
+    } else if (typeof body === 'object' && body !== null) {
+      if ('error' in body && typeof (body as any).error === 'string') {
+        message = (body as any).error
+      } else if ('message' in body && typeof (body as any).message === 'string') {
+        message = (body as any).message
+      }
+    }
+  }
+  console.error('[api] response error', res.status, message, body)
+  return new Error(message)
+}
+
 async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Response> {
   const token = getAccessToken()
   const headers: Record<string, string> = {
@@ -34,6 +63,8 @@ async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Res
         headers['Authorization'] = `Bearer ${data.accessToken}`
         return fetch(`${API_URL}${input}`, { ...init, headers })
       }
+      const refreshText = await refreshRes.text().catch(() => '')
+      console.error('[api] refresh failed', refreshRes.status, refreshText)
     }
   }
 
@@ -45,15 +76,15 @@ export async function fetchProjects(tabId?: string): Promise<{ projects: any[] }
   const url = new URL(`${API_URL}/projects`)
   if (tabId) url.searchParams.set('tabId', tabId)
   const res = await fetch(url.toString())
-  if (!res.ok) throw new Error('Failed to fetch projects')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to fetch projects')
+  return (await parseJsonBody(res)) as { projects: any[] }
 }
 
 // Public tabs — returns all tabs for authenticated users, only public tabs for unauthenticated
 export async function fetchTabs(): Promise<{ tabs: any[] }> {
   const res = await fetchWithAuth('/tabs')
-  if (!res.ok) throw new Error('Failed to fetch tabs')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to fetch tabs')
+  return (await parseJsonBody(res)) as { tabs: any[] }
 }
 
 export async function createTab(tab: any) {
@@ -61,8 +92,8 @@ export async function createTab(tab: any) {
     method: 'POST',
     body: JSON.stringify(tab),
   })
-  if (!res.ok) throw new Error('Failed to create tab')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to create tab')
+  return parseJsonBody(res)
 }
 
 export async function updateTab(id: string, tab: any) {
@@ -70,21 +101,16 @@ export async function updateTab(id: string, tab: any) {
     method: 'PATCH',
     body: JSON.stringify(tab),
   })
-  if (!res.ok) throw new Error('Failed to update tab')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to update tab')
+  return parseJsonBody(res)
 }
 
 export async function deleteTab(id: string) {
   const res = await fetchWithAuth(`/tabs/${id}`, {
     method: 'DELETE',
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Failed to delete tab' }))
-    const error = new Error(err.error || 'Failed to delete tab')
-    ;(error as any).status = res.status
-    throw error
-  }
-  return res.status === 204 ? null : res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to delete tab')
+  return res.status === 204 ? null : parseJsonBody(res)
 }
 
 // Projects (admin)
@@ -93,8 +119,8 @@ export async function createProject(project: any) {
     method: 'POST',
     body: JSON.stringify(project),
   })
-  if (!res.ok) throw new Error('Failed to create project')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to create project')
+  return parseJsonBody(res)
 }
 
 export async function updateProject(id: string, project: any) {
@@ -102,20 +128,16 @@ export async function updateProject(id: string, project: any) {
     method: 'PUT',
     body: JSON.stringify(project),
   })
-  if (!res.ok) {
-    const text = await res.text().catch(() => 'Failed to update project')
-    throw new Error(text || 'Failed to update project')
-  }
-  const text = await res.text()
-  return text ? JSON.parse(text) : null
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to update project')
+  return parseJsonBody(res)
 }
 
 export async function deleteProject(id: string) {
   const res = await fetchWithAuth(`/projects/${id}`, {
     method: 'DELETE',
   })
-  if (!res.ok) throw new Error('Failed to delete project')
-  return res.status === 204 ? null : res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to delete project')
+  return res.status === 204 ? null : parseJsonBody(res)
 }
 
 // Steps
@@ -124,8 +146,8 @@ export async function createStep(projectId: string, step: any) {
     method: 'POST',
     body: JSON.stringify(step),
   })
-  if (!res.ok) throw new Error('Failed to create step')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to create step')
+  return parseJsonBody(res)
 }
 
 // Alias for store compatibility (expects object with projectId inside)
@@ -139,16 +161,16 @@ export async function updateStep(projectId: string, stepId: string, step: any) {
     method: 'PUT',
     body: JSON.stringify(step),
   })
-  if (!res.ok) throw new Error('Failed to update step')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to update step')
+  return parseJsonBody(res)
 }
 
 export async function deleteStep(projectId: string, stepId: string) {
   const res = await fetchWithAuth(`/projects/${projectId}/steps/${stepId}`, {
     method: 'DELETE',
   })
-  if (!res.ok) throw new Error('Failed to delete step')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to delete step')
+  return res.status === 204 ? null : parseJsonBody(res)
 }
 
 export async function updateProjectApi(id: string, project: any) {
@@ -164,16 +186,16 @@ export async function updateStepApi(stepId: string, updates: any) {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
-  if (!res.ok) throw new Error('Failed to update step')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to update step')
+  return parseJsonBody(res)
 }
 
 export async function deleteStepApi(stepId: string) {
   const res = await fetchWithAuth(`/steps/${stepId}`, {
     method: 'DELETE',
   })
-  if (!res.ok) throw new Error('Failed to delete step')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to delete step')
+  return res.status === 204 ? null : parseJsonBody(res)
 }
 
 // Auth
@@ -183,11 +205,8 @@ export async function login(email: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Login failed' }))
-    throw new Error(err.error || 'Login failed')
-  }
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Login failed')
+  return parseJsonBody(res)
 }
 
 export async function refreshAccessToken(refreshToken: string) {
@@ -196,6 +215,6 @@ export async function refreshAccessToken(refreshToken: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken }),
   })
-  if (!res.ok) throw new Error('Refresh failed')
-  return res.json()
+  if (!res.ok) throw await parseErrorBody(res, 'Refresh failed')
+  return parseJsonBody(res)
 }

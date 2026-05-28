@@ -57,10 +57,6 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   const [editingDate, setEditingDate] = useState(false)
   const [dateValue, setDateValue] = useState(step.dueDate || '')
 
-  const debouncedUpdateContent = useDebounce((projectId: string, stepId: string, content: string) => {
-    updateStep(projectId, stepId, { content })
-  }, 500)
-
   const debouncedUpdateDate = useDebounce((projectId: string, stepId: string, dueDate: string | null) => {
     updateStep(projectId, stepId, { dueDate })
   }, 500)
@@ -130,8 +126,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
     const value = e.target.value
     const capitalized = value.length === 1 ? value.toUpperCase() : value
     setContentValue(capitalized)
-    debouncedUpdateContent(step.projectId, step.id, capitalized)
-  }, [step.projectId, step.id, debouncedUpdateContent])
+  }, [])
 
   const handleContentSpanClick = useCallback(() => {
     if (isAdmin) setEditingContent(true)

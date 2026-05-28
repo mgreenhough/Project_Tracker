@@ -73,6 +73,7 @@ export const useProjectStore = create<ProjectStore>()(
           const data = await fetchProjects()
           set({ projects: data.projects, isLoading: false })
         } catch (err: any) {
+          console.error('[useProjectStore] loadProjects failed', err)
           set({ error: err.message || 'Failed to load projects', isLoading: false })
         }
       },
@@ -108,6 +109,7 @@ export const useProjectStore = create<ProjectStore>()(
             }))
             return { ...newProject, id: data.project.id }
           } catch (err: any) {
+            console.error('[useProjectStore] addProject failed', err)
             set({ error: err.message || 'Failed to create project' })
           }
         }
@@ -123,6 +125,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           updateProjectApi(id, updates).catch((err: any) => {
+            console.error('[useProjectStore] updateProject failed', err)
             set({ error: err.message || 'Failed to update project' })
           })
         }
@@ -137,6 +140,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           deleteProjectApi(id).catch((err: any) => {
+            console.error('[useProjectStore] deleteProject failed', err)
             set({ error: err.message || 'Failed to delete project' })
           })
         }
@@ -157,6 +161,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           updateProjectApi(id, { isArchived: true, priorityIndex: newPriority }).catch((err: any) => {
+            console.error('[useProjectStore] archiveProject failed', err)
             set({ error: err.message || 'Failed to archive project' })
           })
         }
@@ -171,6 +176,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           updateProjectApi(id, { isArchived: false }).catch((err: any) => {
+            console.error('[useProjectStore] dearchiveProject failed', err)
             set({ error: err.message || 'Failed to de-archive project' })
           })
         }
@@ -249,6 +255,7 @@ export const useProjectStore = create<ProjectStore>()(
             }))
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
+            console.error('[useProjectStore] addStep failed', err)
             set({ error: err.message || 'Failed to create step' })
           }
         }
@@ -272,6 +279,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           updateStepApi(stepId, updates).catch((err: any) => {
+            console.error('[useProjectStore] updateStep failed', err)
             set({ error: err.message || 'Failed to update step' })
           })
         }
@@ -292,6 +300,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           deleteStepApi(stepId).catch((err: any) => {
+            console.error('[useProjectStore] deleteStep failed', err)
             set({ error: err.message || 'Failed to delete step' })
           })
         }
@@ -314,7 +323,9 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           orderedIds.forEach((id, index) => {
-            updateStepApi(id, { stepOrder: index }).catch(() => {})
+            updateStepApi(id, { stepOrder: index }).catch((err: any) => {
+              console.error('[useProjectStore] reorderSteps failed', { stepId: id, err })
+            })
           })
         }
       },
@@ -351,7 +362,9 @@ export const useProjectStore = create<ProjectStore>()(
           const project = get().projects.find((p) => p.id === projectId)
           const step = project?.steps.find((s) => s.id === stepId)
           if (step) {
-            updateStepApi(stepId, { status: step.status }).catch(() => {})
+            updateStepApi(stepId, { status: step.status }).catch((err: any) => {
+              console.error('[useProjectStore] cycleStepStatus failed', err)
+            })
           }
         }
       },
