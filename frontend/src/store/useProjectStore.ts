@@ -237,6 +237,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           // create a pending promise that resolves when server returns the real id
+          console.debug('[useProjectStore] addStep: creating pending for', newStep.id)
           const pending = new Promise<string>((resolve) => {
             get()._pendingCreateResolvers.set(newStep.id, resolve)
           })
@@ -251,6 +252,7 @@ export const useProjectStore = create<ProjectStore>()(
               dueDate: newStep.dueDate,
               clientId: newStep.id,
             })
+            console.debug('[useProjectStore] addStep: created server step', { clientId: data.clientId, serverId: data.step.id })
             set((state) => ({
               projects: state.projects.map((p) =>
                 p.id === projectId
@@ -299,7 +301,9 @@ export const useProjectStore = create<ProjectStore>()(
             try {
               let targetId = stepId
               if (get().pendingStepCreates.has(stepId)) {
+                console.debug('[useProjectStore] updateStep: waiting for pending create', stepId)
                 targetId = await get().pendingStepCreates.get(stepId)!
+                console.debug('[useProjectStore] updateStep: resolved pending create', stepId, '->', targetId)
               }
               await updateStepApi(targetId, updates)
             } catch (err: any) {
