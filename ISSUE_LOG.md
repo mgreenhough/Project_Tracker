@@ -181,3 +181,5 @@ Committed 2245: 7dba42a
 "Step not found for update" errors appearing in backend logs when updating steps. Root cause: The isClientId check used `stepId.includes('-') && stepId.length === 36`, which incorrectly identified server-generated UUIDs as client IDs, causing the system to try creating steps that already existed on the server. Solution: Added `_clientStepIds` Set to explicitly track client-side step IDs. IDs are added when steps are created locally and removed when they're successfully created on the server. This ensures only truly client-side steps trigger server creation in updateStep.
 
 Committed 2305: db595e0
+
+1010. [] Editing tasks doesnt work on first attemp. produces step not found error. second attempt persists approprieately. 

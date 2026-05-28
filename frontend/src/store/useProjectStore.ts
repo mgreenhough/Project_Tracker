@@ -379,6 +379,17 @@ export const useProjectStore = create<ProjectStore>()(
                 targetId = await get().pendingStepCreates.get(stepId)!
                 console.debug('[useProjectStore] updateStep: resolved pending create', stepId, '->', targetId)
               }
+              
+              // Double-check: if the step doesn't exist in current state, it might have been updated
+              // This handles race condition where component has old ID but state has new ID
+              const currentProject = get().projects.find((p) => p.id === projectId)
+              const stepExists = currentProject?.steps.some((s) => s.id === targetId)
+              
+              if (!stepExists) {
+                console.debug('[useProjectStore] updateStep: step not found with ID', targetId, '- skipping API call (likely race condition)')
+                return
+              }
+              
               await updateStep(projectId, targetId, updates)
             } catch (err: any) {
               console.error('[useProjectStore] updateStep failed', err)
