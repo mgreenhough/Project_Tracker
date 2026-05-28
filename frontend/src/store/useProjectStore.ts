@@ -227,6 +227,18 @@ export const useProjectStore = create<ProjectStore>()(
           createdAt: now(),
           updatedAt: now(),
         }
+        
+        // If admin, create pending promise BEFORE updating state
+        // This ensures any immediate updates will wait for the server ID
+        let pendingPromise: Promise<string> | null = null
+        if (get().isAdmin) {
+          console.debug('[useProjectStore] addStep: creating pending for', newStep.id)
+          pendingPromise = new Promise<string>((resolve) => {
+            get()._pendingCreateResolvers.set(newStep.id, resolve)
+          })
+          get().pendingStepCreates.set(newStep.id, pendingPromise)
+        }
+
         set((state) => ({
           projects: state.projects.map((p) =>
             p.id === projectId
@@ -235,14 +247,7 @@ export const useProjectStore = create<ProjectStore>()(
           ),
         }))
 
-        if (get().isAdmin) {
-          // create a pending promise that resolves when server returns the real id
-          console.debug('[useProjectStore] addStep: creating pending for', newStep.id)
-          const pending = new Promise<string>((resolve) => {
-            get()._pendingCreateResolvers.set(newStep.id, resolve)
-          })
-          get().pendingStepCreates.set(newStep.id, pending)
-
+        if (get().isAdmin && pendingPromise) {
           try {
             const data = await createStepApi({
               projectId,
@@ -269,12 +274,18 @@ export const useProjectStore = create<ProjectStore>()(
             }))
             // resolve pending promise so any queued updates can proceed
             const resolver = get()._pendingCreateResolvers.get(newStep.id)
-            if (resolver) resolver(data.step.id)
+            if (resolver) {
+              console.debug('[useProjectStore] addStep: resolving pending', newStep.id, '->', data.step.id)
+              resolver(data.step.id)
+            }
             get()._pendingCreateResolvers.delete(newStep.id)
             get().pendingStepCreates.delete(newStep.id)
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
             console.error('[useProjectStore] addStep failed', err)
+            // Clean up pending promise on error
+            get()._pendingCreateResolvers.delete(newStep.id)
+            get().pendingStepCreates.delete(newStep.id)
             set({ error: err.message || 'Failed to create step' })
           }
         }
@@ -352,9 +363,19 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           orderedIds.forEach((id, index) => {
-            updateStepApi(id, { stepOrder: index }).catch((err: any) => {
-              console.error('[useProjectStore] reorderSteps failed', { stepId: id, err })
-            })
+            ;(async () => {
+              try {
+                let targetId = id
+                if (get().pendingStepCreates.has(id)) {
+                  console.debug('[useProjectStore] reorderSteps: waiting for pending create', id)
+                  targetId = await get().pendingStepCreates.get(id)!
+                  console.debug('[useProjectStore] reorderSteps: resolved pending create', id, '->', targetId)
+                }
+                await updateStepApi(targetId, { stepOrder: index })
+              } catch (err: any) {
+                console.error('[useProjectStore] reorderSteps failed', { stepId: id, err })
+              }
+            })()
           })
         }
       },
@@ -391,9 +412,19 @@ export const useProjectStore = create<ProjectStore>()(
           const project = get().projects.find((p) => p.id === projectId)
           const step = project?.steps.find((s) => s.id === stepId)
           if (step) {
-            updateStepApi(stepId, { status: step.status }).catch((err: any) => {
-              console.error('[useProjectStore] cycleStepStatus failed', err)
-            })
+            ;(async () => {
+              try {
+                let targetId = stepId
+                if (get().pendingStepCreates.has(stepId)) {
+                  console.debug('[useProjectStore] cycleStepStatus: waiting for pending create', stepId)
+                  targetId = await get().pendingStepCreates.get(stepId)!
+                  console.debug('[useProjectStore] cycleStepStatus: resolved pending create', stepId, '->', targetId)
+                }
+                await updateStepApi(targetId, { status: step.status })
+              } catch (err: any) {
+                console.error('[useProjectStore] cycleStepStatus failed', err)
+              }
+            })()
           }
         }
       },
