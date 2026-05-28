@@ -182,4 +182,6 @@ Committed 2245: 7dba42a
 
 Committed 2305: db595e0
 
-1010. [] Editing tasks doesnt work on first attemp. produces step not found error. second attempt persists approprieately. 
+1010. [x] Editing tasks doesnt work on first attempt. produces step not found error. second attempt persists appropriately. Root cause: Race condition when a step is created with content and immediately edited - the component still has the old client ID but the store has already updated to the server ID and removed the pending promise, causing updateStep to try updating with a client ID that doesn't exist on the server. Solution: Added a safety check in updateStep to verify the step exists in the current state before making the API call. If the step doesn't exist with the target ID, it skips the API call (the update was already applied to local state).
+
+Committed 2321: af4fc30
