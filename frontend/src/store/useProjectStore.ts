@@ -17,6 +17,8 @@ interface ProjectStoreState {
   isAdmin: boolean
   isLoading: boolean
   error: string | null
+  pendingStepCreates: Map<string, Promise<string>>
+  _pendingCreateResolvers: Map<string, (id: string) => void>
 }
 
 type ProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'steps' | 'priorityIndex' | 'isDeleted'>
