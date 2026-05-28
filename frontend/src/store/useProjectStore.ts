@@ -8,8 +8,8 @@ import {
   updateProjectApi,
   deleteProjectApi,
   createStepApi,
-  updateStepApi,
-  deleteStepApi,
+  updateStep,
+  deleteStep,
 } from '../api'
 
 interface ProjectStoreState {
@@ -316,7 +316,7 @@ export const useProjectStore = create<ProjectStore>()(
                 targetId = await get().pendingStepCreates.get(stepId)!
                 console.debug('[useProjectStore] updateStep: resolved pending create', stepId, '->', targetId)
               }
-              await updateStepApi(targetId, updates)
+              await updateStep(projectId, targetId, updates)
             } catch (err: any) {
               console.error('[useProjectStore] updateStep failed', err)
               set({ error: err.message || 'Failed to update step' })
@@ -339,7 +339,7 @@ export const useProjectStore = create<ProjectStore>()(
         }))
 
         if (get().isAdmin) {
-          deleteStepApi(stepId).catch((err: any) => {
+          deleteStep(projectId, stepId).catch((err: any) => {
             console.error('[useProjectStore] deleteStep failed', err)
             set({ error: err.message || 'Failed to delete step' })
           })
@@ -371,7 +371,7 @@ export const useProjectStore = create<ProjectStore>()(
                   targetId = await get().pendingStepCreates.get(id)!
                   console.debug('[useProjectStore] reorderSteps: resolved pending create', id, '->', targetId)
                 }
-                await updateStepApi(targetId, { stepOrder: index })
+                await updateStep(projectId, targetId, { stepOrder: index })
               } catch (err: any) {
                 console.error('[useProjectStore] reorderSteps failed', { stepId: id, err })
               }
@@ -420,7 +420,7 @@ export const useProjectStore = create<ProjectStore>()(
                   targetId = await get().pendingStepCreates.get(stepId)!
                   console.debug('[useProjectStore] cycleStepStatus: resolved pending create', stepId, '->', targetId)
                 }
-                await updateStepApi(targetId, { status: step.status })
+                await updateStep(projectId, targetId, { status: step.status })
               } catch (err: any) {
                 console.error('[useProjectStore] cycleStepStatus failed', err)
               }
