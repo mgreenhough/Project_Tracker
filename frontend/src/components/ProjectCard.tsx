@@ -145,7 +145,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   const handleAddStep = useCallback(() => {
     const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.stepOrder)) + 1 : 0
     addStep(project.id, {
-      content: 'New step',
+      content: '',
       status: 'CLEAR',
       stepOrder: nextOrder,
       dueDate: null,

@@ -76,10 +76,23 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
     }
   }, [editingContent])
 
+  // Auto-enter edit mode for new empty steps
+  useEffect(() => {
+    if (isAdmin && step.content === '' && !editingContent) {
+      setEditingContent(true)
+    }
+  }, [isAdmin, step.content, editingContent])
+
   const handleContentConfirm = useCallback(() => {
-    setEditingContent(false)
-    updateStep(step.projectId, step.id, { content: contentValue.trim() || step.content })
-  }, [step.projectId, step.id, step.content, contentValue, updateStep])
+    const trimmed = contentValue.trim()
+    if (trimmed === '' && step.content === '') {
+      // If both current and new content are empty, delete the step
+      deleteStep(step.projectId, step.id)
+    } else {
+      setEditingContent(false)
+      updateStep(step.projectId, step.id, { content: trimmed || step.content })
+    }
+  }, [step.projectId, step.id, step.content, contentValue, updateStep, deleteStep])
 
   const handleContentCancel = useCallback(() => {
     setEditingContent(false)
