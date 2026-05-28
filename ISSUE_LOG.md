@@ -135,4 +135,8 @@ Committed 1749: 3702b0a
 
 1007. [x] Added backend error log files and authenticated log endpoint at `/api/logs`; documented server log location and access method.
 
- 
+Committed 1738: 7471582
+
+1008. [x] When adding a step to a project, first attempt fails and produces "step not found" error. Second attempt to edit step text works though.
+
+Committed 1752: 6a1ec89

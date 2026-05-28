@@ -59,6 +59,9 @@ const nextPriorityIndex = (projects: Project[]): number => {
 export const useProjectStore = create<ProjectStore>()(
   persist(
     (set, get) => ({
+      // Map of client temporary step id -> promise that resolves to server step id
+      pendingStepCreates: new Map<string, Promise<string>>(),
+      _pendingCreateResolvers: new Map<string, (id: string) => void>(),
       projects: [],
       isAdmin: false,
       isLoading: false,
@@ -231,6 +234,12 @@ export const useProjectStore = create<ProjectStore>()(
         }))
 
         if (get().isAdmin) {
+          // create a pending promise that resolves when server returns the real id
+          const pending = new Promise<string>((resolve) => {
+            get()._pendingCreateResolvers.set(newStep.id, resolve)
+          })
+          get().pendingStepCreates.set(newStep.id, pending)
+
           try {
             const data = await createStepApi({
               projectId,
@@ -254,6 +263,11 @@ export const useProjectStore = create<ProjectStore>()(
                   : p
               ),
             }))
+            // resolve pending promise so any queued updates can proceed
+            const resolver = get()._pendingCreateResolvers.get(newStep.id)
+            if (resolver) resolver(data.step.id)
+            get()._pendingCreateResolvers.delete(newStep.id)
+            get().pendingStepCreates.delete(newStep.id)
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
             console.error('[useProjectStore] addStep failed', err)
@@ -279,10 +293,18 @@ export const useProjectStore = create<ProjectStore>()(
         }))
 
         if (get().isAdmin) {
-          updateStepApi(stepId, updates).catch((err: any) => {
-            console.error('[useProjectStore] updateStep failed', err)
-            set({ error: err.message || 'Failed to update step' })
-          })
+          ;(async () => {
+            try {
+              let targetId = stepId
+              if (get().pendingStepCreates.has(stepId)) {
+                targetId = await get().pendingStepCreates.get(stepId)!
+              }
+              await updateStepApi(targetId, updates)
+            } catch (err: any) {
+              console.error('[useProjectStore] updateStep failed', err)
+              set({ error: err.message || 'Failed to update step' })
+            }
+          })()
         }
       },
 
