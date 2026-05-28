@@ -238,6 +238,7 @@ export const useProjectStore = create<ProjectStore>()(
               stepOrder: newStep.stepOrder,
               status: newStep.status,
               dueDate: newStep.dueDate,
+              clientId: newStep.id,
             })
             set((state) => ({
               projects: state.projects.map((p) =>
@@ -245,7 +246,7 @@ export const useProjectStore = create<ProjectStore>()(
                   ? {
                       ...p,
                       steps: p.steps.map((s) =>
-                        s.id === newStep.id
+                        s.id === (data.clientId ?? newStep.id)
                           ? { ...s, id: data.step.id, createdAt: data.step.createdAt, updatedAt: data.step.updatedAt }
                           : s
                       ),

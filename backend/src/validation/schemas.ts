@@ -18,6 +18,7 @@ export const stepCreateSchema = z.object({
   stepOrder: z.number().int().min(0).optional(),
   status: z.enum(['CLEAR', 'HOLD_POINT', 'DECISION_POINT', 'COMPLETE']).optional(),
   dueDate: z.string().regex(/^\d{2}\/\d{2}\/\d{2}$/).nullable().optional(),
+  clientId: z.string().uuid().optional(),
 });
 
 export const stepUpdateSchema = stepCreateSchema.partial().omit({ projectId: true });
