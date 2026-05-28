@@ -332,6 +332,8 @@ export const useProjectStore = create<ProjectStore>()(
                 })
                 
                 console.debug('[useProjectStore] updateStep: created server step', { clientId: data.clientId, serverId: data.step.id })
+                
+                // Update state with server ID and all current data (including updates)
                 set((state) => ({
                   projects: state.projects.map((p) =>
                     p.id === projectId
@@ -339,7 +341,13 @@ export const useProjectStore = create<ProjectStore>()(
                           ...p,
                           steps: p.steps.map((s) =>
                             s.id === (data.clientId ?? stepId)
-                              ? { ...s, id: data.step.id, createdAt: data.step.createdAt, updatedAt: data.step.updatedAt }
+                              ? { 
+                                  ...s, 
+                                  ...updates,
+                                  id: data.step.id, 
+                                  createdAt: data.step.createdAt, 
+                                  updatedAt: data.step.updatedAt 
+                                }
                               : s
                           ),
                         }
@@ -353,6 +361,7 @@ export const useProjectStore = create<ProjectStore>()(
                 }
                 get()._pendingCreateResolvers.delete(stepId)
                 get().pendingStepCreates.delete(stepId)
+                // Step is now created with all updates applied - no need to call update API
                 return
               }
               

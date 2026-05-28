@@ -160,3 +160,7 @@ Committed 2198: 2b6c491
 1008.4 [x] FIXED! Root cause identified: Race condition occurred when user clicked on new step to edit it before server returned real ID. Solution: New steps now start with empty content and automatically enter edit mode, allowing user to type immediately. By the time they press Enter, server has responded with real ID. Also added logic to delete step if user presses Enter on empty content.
 
 Committed 2218: 1a3ad57
+
+1008.5 [x] Fix created new issue: "validation failed" error when adding step, then "step not found" on first Enter, requiring double Enter to save. Root cause: Empty steps were being sent to server immediately, failing validation. Solution: Delay server creation until step has actual content. Empty steps exist only locally until user types content, then created on server during first update.
+
+Committed 2230: 3a387fb

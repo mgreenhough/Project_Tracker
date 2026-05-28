@@ -90,7 +90,10 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
       deleteStep(step.projectId, step.id)
     } else {
       setEditingContent(false)
-      updateStep(step.projectId, step.id, { content: trimmed || step.content })
+      // Only update if content actually changed
+      if (trimmed !== step.content) {
+        updateStep(step.projectId, step.id, { content: trimmed })
+      }
     }
   }, [step.projectId, step.id, step.content, contentValue, updateStep, deleteStep])
 
