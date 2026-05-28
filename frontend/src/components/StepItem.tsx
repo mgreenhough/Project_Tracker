@@ -53,6 +53,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   const [editingContent, setEditingContent] = useState(false)
   const [contentValue, setContentValue] = useState(step.content)
   const contentInputRef = useRef<HTMLInputElement>(null)
+  const hasAutoEnteredEdit = useRef(false)
 
   const [editingDate, setEditingDate] = useState(false)
   const [dateValue, setDateValue] = useState(step.dueDate || '')
@@ -76,10 +77,15 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
     }
   }, [editingContent])
 
-  // Auto-enter edit mode for new empty steps
+  // Auto-enter edit mode for new empty steps (only once)
   useEffect(() => {
-    if (isAdmin && step.content === '' && !editingContent) {
+    if (isAdmin && step.content === '' && !editingContent && !hasAutoEnteredEdit.current) {
+      hasAutoEnteredEdit.current = true
       setEditingContent(true)
+    }
+    // Reset flag when step gets content
+    if (step.content !== '') {
+      hasAutoEnteredEdit.current = false
     }
   }, [isAdmin, step.content, editingContent])
 

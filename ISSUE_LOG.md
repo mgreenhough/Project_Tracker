@@ -164,3 +164,7 @@ Committed 2218: 1a3ad57
 1008.5 [x] Fix created new issue: "validation failed" error when adding step, then "step not found" on first Enter, requiring double Enter to save. Root cause: Empty steps were being sent to server immediately, failing validation. Solution: Delay server creation until step has actual content. Empty steps exist only locally until user types content, then created on server during first update.
 
 Committed 2230: 3a387fb
+
+1008.6 [x] Still requires double Enter! Second Enter produces "step not found" error. Root cause: When step is created on server during first update, the state is updated with new server ID, but the updateStep function then tries to call update API with the old client ID. Solution: Apply all updates during step creation and return early - no need to call update API after creation since all data is already applied.
+
+Committed 2237: 1683d5f
