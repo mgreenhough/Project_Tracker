@@ -73,9 +73,12 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   useEffect(() => {
     if (editingContent && contentInputRef.current) {
       contentInputRef.current.focus()
-      contentInputRef.current.select()
+      // Only select text for new empty steps, not when re-entering edit mode
+      if (contentValue === '') {
+        contentInputRef.current.select()
+      }
     }
-  }, [editingContent])
+  }, [editingContent, contentValue])
 
   // Auto-enter edit mode for new empty steps (only once)
   useEffect(() => {

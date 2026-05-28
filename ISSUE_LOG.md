@@ -168,3 +168,7 @@ Committed 2230: 3a387fb
 1008.6 [x] Still requires double Enter! Second Enter produces "step not found" error. Root cause: When step is created on server during first update, the state is updated with new server ID, but the updateStep function then tries to call update API with the old client ID. Solution: Apply all updates during step creation and return early - no need to call update API after creation since all data is already applied.
 
 Committed 2237: 1683d5f
+
+1008.7 [x] Error gone but still requires two Enters! Root cause: The auto-enter edit mode useEffect has `editingContent` in dependency array. When user presses Enter, `setEditingContent(false)` triggers the useEffect, which sees `step.content === ''` (state hasn't updated yet) and re-enters edit mode. Solution: Use ref to track if we've already auto-entered edit mode for this step, preventing re-entry until step gets content.
+
+Committed 2240: da683c3
