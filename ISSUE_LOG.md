@@ -139,15 +139,24 @@ Committed 1738: 7471582
 
 1008. [x] When adding a step to a project, first attempt fails and produces "step not found" error. Second attempt to edit step text works though.
 
-    1008.1 [x] Used log API to analyze error - confirmed race condition where frontend tries to update step with client UUID before server returns real ID
-    
-    1008.2 [x] Fixed race condition by registering pending promise BEFORE state update in addStep, ensuring any immediate updates wait for server ID. Added pending promise checks to updateStep, reorderSteps, and cycleStepStatus functions.
-
 Committed 1752: 6a1ec89
-Committed 2146: 6992c6c
 
 1008.1 [x] Fix failed. Entered new step text, pressed enter, text dissappeared and produced "step not found" error.
 
 Committed 1844: a75c567 build failed. Fix and re-push 250350b
 
-1008.2 [] Still same failure!
+1008.2 [x] Still same failure!
+
+    Used log API to analyze error - confirmed race condition where frontend tries to update step with client UUID before server returns real ID
+    
+    Fixed race condition by registering pending promise BEFORE state update in addStep, ensuring any immediate updates wait for server ID. Added pending promise checks to updateStep, reorderSteps, and cycleStepStatus functions.
+
+Committed 2149: 6e7e7ae
+
+1008.3 [x] Failed
+
+Committed 2198: 2b6c491
+
+1008.4 [x] FIXED! Root cause identified: Race condition occurred when user clicked on new step to edit it before server returned real ID. Solution: New steps now start with empty content and automatically enter edit mode, allowing user to type immediately. By the time they press Enter, server has responded with real ID. Also added logic to delete step if user presses Enter on empty content.
+
+Committed 2218: 1a3ad57

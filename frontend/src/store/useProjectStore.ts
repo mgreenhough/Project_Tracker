@@ -228,17 +228,7 @@ export const useProjectStore = create<ProjectStore>()(
           updatedAt: now(),
         }
         
-        // If admin, create pending promise BEFORE updating state
-        // This ensures any immediate updates will wait for the server ID
-        let pendingPromise: Promise<string> | null = null
-        if (get().isAdmin) {
-          console.debug('[useProjectStore] addStep: creating pending for', newStep.id)
-          pendingPromise = new Promise<string>((resolve) => {
-            get()._pendingCreateResolvers.set(newStep.id, resolve)
-          })
-          get().pendingStepCreates.set(newStep.id, pendingPromise)
-        }
-
+        // Add step to local state immediately
         set((state) => ({
           projects: state.projects.map((p) =>
             p.id === projectId
@@ -247,7 +237,14 @@ export const useProjectStore = create<ProjectStore>()(
           ),
         }))
 
-        if (get().isAdmin && pendingPromise) {
+        // Only send to server if content is not empty (to avoid validation errors)
+        // Empty steps will be created on first update
+        if (get().isAdmin && newStep.content.trim() !== '') {
+          const pendingPromise = new Promise<string>((resolve) => {
+            get()._pendingCreateResolvers.set(newStep.id, resolve)
+          })
+          get().pendingStepCreates.set(newStep.id, pendingPromise)
+          
           try {
             const data = await createStepApi({
               projectId,
@@ -272,7 +269,6 @@ export const useProjectStore = create<ProjectStore>()(
                   : p
               ),
             }))
-            // resolve pending promise so any queued updates can proceed
             const resolver = get()._pendingCreateResolvers.get(newStep.id)
             if (resolver) {
               console.debug('[useProjectStore] addStep: resolving pending', newStep.id, '->', data.step.id)
@@ -283,7 +279,6 @@ export const useProjectStore = create<ProjectStore>()(
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
             console.error('[useProjectStore] addStep failed', err)
-            // Clean up pending promise on error
             get()._pendingCreateResolvers.delete(newStep.id)
             get().pendingStepCreates.delete(newStep.id)
             set({ error: err.message || 'Failed to create step' })
@@ -310,8 +305,60 @@ export const useProjectStore = create<ProjectStore>()(
         if (get().isAdmin) {
           ;(async () => {
             try {
+              // Check if this step exists on the server
+              const project = get().projects.find((p) => p.id === projectId)
+              const step = project?.steps.find((s) => s.id === stepId)
+              
+              // If step has a UUID format (client-side ID) and no pending create, it needs to be created first
+              const isClientId = stepId.includes('-') && stepId.length === 36
+              const hasPendingCreate = get().pendingStepCreates.has(stepId)
+              
+              if (isClientId && !hasPendingCreate && step) {
+                // This is an empty step that was never sent to server - create it now
+                console.debug('[useProjectStore] updateStep: creating step on server first', stepId)
+                const pendingPromise = new Promise<string>((resolve) => {
+                  get()._pendingCreateResolvers.set(stepId, resolve)
+                })
+                get().pendingStepCreates.set(stepId, pendingPromise)
+                
+                const mergedStep = { ...step, ...updates }
+                const data = await createStepApi({
+                  projectId,
+                  content: mergedStep.content,
+                  stepOrder: mergedStep.stepOrder,
+                  status: mergedStep.status,
+                  dueDate: mergedStep.dueDate,
+                  clientId: stepId,
+                })
+                
+                console.debug('[useProjectStore] updateStep: created server step', { clientId: data.clientId, serverId: data.step.id })
+                set((state) => ({
+                  projects: state.projects.map((p) =>
+                    p.id === projectId
+                      ? {
+                          ...p,
+                          steps: p.steps.map((s) =>
+                            s.id === (data.clientId ?? stepId)
+                              ? { ...s, id: data.step.id, createdAt: data.step.createdAt, updatedAt: data.step.updatedAt }
+                              : s
+                          ),
+                        }
+                      : p
+                  ),
+                }))
+                
+                const resolver = get()._pendingCreateResolvers.get(stepId)
+                if (resolver) {
+                  resolver(data.step.id)
+                }
+                get()._pendingCreateResolvers.delete(stepId)
+                get().pendingStepCreates.delete(stepId)
+                return
+              }
+              
+              // Normal update flow
               let targetId = stepId
-              if (get().pendingStepCreates.has(stepId)) {
+              if (hasPendingCreate) {
                 console.debug('[useProjectStore] updateStep: waiting for pending create', stepId)
                 targetId = await get().pendingStepCreates.get(stepId)!
                 console.debug('[useProjectStore] updateStep: resolved pending create', stepId, '->', targetId)
