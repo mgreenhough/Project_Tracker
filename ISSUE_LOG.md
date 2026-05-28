@@ -139,4 +139,15 @@ Committed 1738: 7471582
 
 1008. [x] When adding a step to a project, first attempt fails and produces "step not found" error. Second attempt to edit step text works though.
 
+    1008.1 [x] Used log API to analyze error - confirmed race condition where frontend tries to update step with client UUID before server returns real ID
+    
+    1008.2 [x] Fixed race condition by registering pending promise BEFORE state update in addStep, ensuring any immediate updates wait for server ID. Added pending promise checks to updateStep, reorderSteps, and cycleStepStatus functions.
+
 Committed 1752: 6a1ec89
+Committed 2146: 6992c6c
+
+1008.1 [x] Fix failed. Entered new step text, pressed enter, text dissappeared and produced "step not found" error.
+
+Committed 1844: a75c567 build failed. Fix and re-push 250350b
+
+1008.2 [] Still same failure!
