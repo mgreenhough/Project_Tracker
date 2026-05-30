@@ -9,7 +9,7 @@ import authRoutes from './routes/auth.js';
 import tabRoutes from './routes/tabs.js';
 import logRoutes from './routes/logs.js';
 import { initDb } from './db/database.js';
-import { ensureLogDir, cleanupOldLogs, logError } from './logger.js';
+import { initializeLogger, logError, getLoggerStatus } from './logger.js';
 
 dotenv.config();
 
@@ -24,8 +24,7 @@ app.use(helmet());
 app.use(express.json({ limit: '1mb' }));
 
 async function initServer(): Promise<void> {
-  await ensureLogDir();
-  await cleanupOldLogs();
+  await initializeLogger();
 
   initDb();
 
@@ -36,7 +35,7 @@ async function initServer(): Promise<void> {
   app.use('/api/logs', logRoutes);
 
   app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), logger: getLoggerStatus() });
   });
 
   app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {

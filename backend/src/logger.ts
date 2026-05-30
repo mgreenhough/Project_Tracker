@@ -7,6 +7,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const LOG_DIR = path.resolve(__dirname, '../logs')
 const RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS ?? '30')
+const MAX_LOG_SIZE_MB = Number(process.env.LOG_MAX_SIZE_MB ?? '10')
+const CLEANUP_INTERVAL_MS = Number(process.env.LOG_CLEANUP_INTERVAL_MS ?? '60') * 60 * 1000 // Default 1 hour
+
+// Singleton state
+let cleanupIntervalId: ReturnType<typeof setInterval> | null = null
+let isInitialized = false
 
 function getLogFileName(date = new Date()): string {
   const year = date.getFullYear()
@@ -32,7 +38,8 @@ export async function ensureLogDir(): Promise<void> {
   await mkdir(LOG_DIR, { recursive: true })
 }
 
-export async function cleanupOldLogs(days = RETENTION_DAYS): Promise<void> {
+export async function cleanupOldLogs(days = RETENTION_DAYS): Promise<number> {
+  let deletedCount = 0
   try {
     const files = await readdir(LOG_DIR)
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
@@ -42,12 +49,97 @@ export async function cleanupOldLogs(days = RETENTION_DAYS): Promise<void> {
         const fileStats = await stat(filePath)
         if (fileStats.mtime.getTime() < cutoff) {
           await unlink(filePath)
+          deletedCount++
+          console.log(`[logger] Deleted old log: ${file}`)
         }
       })
     )
   } catch (err) {
     console.error('[logger] cleanupOldLogs failed', err)
   }
+  return deletedCount
+}
+
+export async function cleanupLargeLogs(maxSizeMB = MAX_LOG_SIZE_MB): Promise<number> {
+  let trimmedCount = 0
+  try {
+    const files = await readdir(LOG_DIR)
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(LOG_DIR, file)
+        const fileStats = await stat(filePath)
+        if (fileStats.size > maxSizeBytes) {
+          // Read file, keep only last 1000 lines
+          const content = await readFile(filePath, 'utf8')
+          const lines = content.split('\n').filter(line => line.trim())
+          if (lines.length > 1000) {
+            const trimmed = lines.slice(-1000).join('\n') + '\n'
+            const { writeFile } = await import('fs/promises')
+            await writeFile(filePath, trimmed, 'utf8')
+            trimmedCount++
+            console.log(`[logger] Trimmed oversized log: ${file} (${lines.length} -> 1000 lines)`)
+          }
+        }
+      })
+    )
+  } catch (err) {
+    console.error('[logger] cleanupLargeLogs failed', err)
+  }
+  return trimmedCount
+}
+
+export async function startScheduledCleanup(): Promise<void> {
+  // Prevent multiple intervals
+  if (cleanupIntervalId !== null) {
+    console.log('[logger] Scheduled cleanup already running')
+    return
+  }
+
+  console.log(`[logger] Starting scheduled cleanup (interval: ${CLEANUP_INTERVAL_MS}ms, retention: ${RETENTION_DAYS} days, max size: ${MAX_LOG_SIZE_MB}MB)`)
+  
+  // Run immediately once
+  await cleanupOldLogs()
+  await cleanupLargeLogs()
+
+  // Schedule recurring cleanup
+  cleanupIntervalId = setInterval(async () => {
+    console.log('[logger] Running scheduled log cleanup...')
+    const deleted = await cleanupOldLogs()
+    const trimmed = await cleanupLargeLogs()
+    console.log(`[logger] Cleanup complete: ${deleted} deleted, ${trimmed} trimmed`)
+  }, CLEANUP_INTERVAL_MS)
+}
+
+export function stopScheduledCleanup(): void {
+  if (cleanupIntervalId !== null) {
+    clearInterval(cleanupIntervalId)
+    cleanupIntervalId = null
+    console.log('[logger] Scheduled cleanup stopped')
+  }
+}
+
+export async function initializeLogger(): Promise<void> {
+  if (isInitialized) {
+    console.log('[logger] Already initialized, skipping')
+    return
+  }
+
+  await ensureLogDir()
+  await startScheduledCleanup()
+  isInitialized = true
+  
+  // Handle graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('[logger] SIGTERM received, stopping cleanup')
+    stopScheduledCleanup()
+  })
+  process.on('SIGINT', () => {
+    console.log('[logger] SIGINT received, stopping cleanup')
+    stopScheduledCleanup()
+  })
+
+  console.log('[logger] Initialized successfully')
 }
 
 export async function listLogFiles(): Promise<string[]> {
@@ -97,4 +189,12 @@ export async function logError(error: unknown, req?: Request): Promise<void> {
     }
   }
   await appendLog('error', normalized.message, meta)
+}
+
+// Health check for monitoring
+export function getLoggerStatus(): { initialized: boolean; cleanupRunning: boolean } {
+  return {
+    initialized: isInitialized,
+    cleanupRunning: cleanupIntervalId !== null
+  }
 }

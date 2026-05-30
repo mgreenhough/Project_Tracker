@@ -201,8 +201,35 @@ Committed 1010: 0d5bbd5
 
 Committed 1030: 45e4346
 
-1013. [] Due date needs second attempt to save. If entering '15/07/26' on first attemp, text just disappears as soon as the '6' is entered and you have to re-enter it.
+1013. [x] Due date needs second attempt to save. If entering '15/07/26' on first attemp, text just disappears as soon as the '6' is entered and you have to re-enter it.
 
-1014. [] Vertical space of project window should be trimmed to size of project stack.
+1014. [x] Vertical space of project window should be trimmed to size of project stack.
 
-1015. [] task or project deletes shouldn't be instant. my fat finger just deleted a task on mobile when I was just trying to bring that project to the front. first click, bring project to front. second - delete.
+1015. [x] task or project deletes shouldn't be instant. my fat finger just deleted a task on mobile when I was just trying to bring that project to the front. first click, bring project to front. second - delete.
+
+Committed 1626: 367b069 failed due to RAM constraint
+
+# CRITICAL ISSUE - 30/05/26
+
+**Logger Memory Leak - Multiple instances spawning**
+
+Issue: Every time `fetch-logs.mjs` was called to check logs, a new server process would start, creating 40+ log instances since 22/05, consuming huge amounts of RAM.
+
+Root Cause: Logger had no singleton protection or scheduled cleanup. `cleanupOldLogs()` only ran once at server startup, not periodically. No mechanism prevented multiple cleanup intervals from being created.
+
+Solution implemented:
+1. Added singleton pattern with `isInitialized` flag to prevent multiple logger initializations
+2. Added `cleanupIntervalId` tracking to prevent multiple cleanup intervals
+3. Implemented `startScheduledCleanup()` that runs every hour (configurable via `LOG_CLEANUP_INTERVAL_MS`)
+4. Added `cleanupLargeLogs()` to trim oversized log files (>10MB default) to last 1000 lines
+5. Added `getLoggerStatus()` for health check monitoring
+6. Added graceful shutdown handlers (SIGTERM/SIGINT) to stop cleanup intervals
+7. Updated `/api/health` endpoint to include logger status
+8. Added environment variables: `LOG_RETENTION_DAYS`, `LOG_MAX_SIZE_MB`, `LOG_CLEANUP_INTERVAL_MS`
+
+Files changed:
+- `backend/src/logger.ts` - Complete refactor with singleton protection, scheduled cleanup, size-based rotation
+- `backend/src/server.ts` - Use `initializeLogger()` and add status to health check
+- `backend/.env.example` - Document new logging configuration options
+
+Committed 
