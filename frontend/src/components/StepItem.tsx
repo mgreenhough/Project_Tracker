@@ -190,35 +190,13 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     setEditingDate(true)
   }, [isAdmin, isProjectFront, onBringToFront])
 
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const handleDeleteClick = useCallback(() => {
     if (!isProjectFront && onBringToFront) {
       onBringToFront()
       return
     }
-    if (!confirmDelete) {
-      setConfirmDelete(true)
-      deleteTimeoutRef.current = setTimeout(() => {
-        setConfirmDelete(false)
-      }, 3000)
-    } else {
-      if (deleteTimeoutRef.current) {
-        clearTimeout(deleteTimeoutRef.current)
-      }
-      deleteStep(step.projectId, step.id)
-      setConfirmDelete(false)
-    }
-  }, [isProjectFront, onBringToFront, confirmDelete, deleteStep, step.projectId, step.id])
-
-  useEffect(() => {
-    return () => {
-      if (deleteTimeoutRef.current) {
-        clearTimeout(deleteTimeoutRef.current)
-      }
-    }
-  }, [])
+    deleteStep(step.projectId, step.id)
+  }, [isProjectFront, onBringToFront, deleteStep, step.projectId, step.id])
 
   const {
     attributes,
@@ -307,13 +285,11 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
         <button
           type="button"
           onClick={handleDeleteClick}
-          className={`transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active ${
-            confirmDelete ? 'text-neon-red bg-neon-red/10 animate-pulse' : 'text-gray-600 active:text-neon-red'
-          }`}
-          title={confirmDelete ? 'Click again to confirm delete' : 'Delete step'}
-          aria-label={confirmDelete ? 'Confirm delete step' : 'Delete step'}
+          className="transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active text-gray-600 active:text-neon-red"
+          title="Delete step"
+          aria-label="Delete step"
         >
-          {confirmDelete ? '!' : '×'}
+          ×
         </button>
       )}
     </div>

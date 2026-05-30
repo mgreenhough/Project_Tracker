@@ -232,4 +232,8 @@ Files changed:
 - `backend/src/server.ts` - Use `initializeLogger()` and add status to health check
 - `backend/.env.example` - Document new logging configuration options
 
-Committed 
+Committed 1818: 0fff0d0
+
+1014.1 [x] Top of project card window is now clipping view of cards!
+
+1016. [x] "Step not found" error upon clicking delete confirmation. get rid of the delete confirmation entirely
