@@ -185,3 +185,12 @@ Committed 2305: db595e0
 1010. [x] Editing tasks doesnt work on first attempt. produces step not found error. second attempt persists appropriately. Root cause: Race condition when a step is created with content and immediately edited - the component still has the old client ID but the store has already updated to the server ID and removed the pending promise, causing updateStep to try updating with a client ID that doesn't exist on the server. Solution: Added a safety check in updateStep to verify the step exists in the current state before making the API call. If the step doesn't exist with the target ID, it skips the API call (the update was already applied to local state).
 
 Committed 2321: af4fc30
+
+
+30/05/26
+
+1011. [x] Creating new project in KHORTECH tab produces errors at each step, "validation failed" when first creating project, "project not found" when saving title. sam on delete. This only happens on khortech tab though and not board. That could be because this tab was made before tabs were even implimented. this may be a legacy code issue and not aplicablie going forward? Inspect log api for specific errors on 29/05 and today, 30/05
+    
+    Root cause: KHORTECH tab was created before tabs were implemented and has a legacy ID that's not in UUID format. The validation schema required `tabId` to be a UUID, causing validation failures when creating/updating projects in that tab.
+    
+    Solution: Modified `projectCreateSchema` in backend/src/validation/schemas.ts to accept any string for `tabId` instead of requiring UUID format, allowing legacy tab IDs to work properly.

@@ -7,7 +7,7 @@ export const projectCreateSchema = z.object({
   isPublic: z.boolean().optional(),
   isArchived: z.boolean().optional(),
   dueDate: z.string().regex(/^\d{2}\/\d{2}\/\d{2}$/).nullable().optional(),
-  tabId: z.string().uuid().optional().nullable(),
+  tabId: z.string().optional().nullable(), // Allow any string ID for legacy tabs
 });
 
 export const projectUpdateSchema = projectCreateSchema.partial();
