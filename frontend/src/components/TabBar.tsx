@@ -71,8 +71,11 @@ const SortableTabItem = memo(function SortableTabItem({
   }, [handleConfirm, tab.name])
 
   const handleNameClick = useCallback((e: React.MouseEvent) => {
+    if (!isAdmin) {
+      // For non-admins, let the click propagate to the parent onClick handler
+      return
+    }
     e.stopPropagation()
-    if (!isAdmin) return
     if (isActive) {
       setIsEditing(true)
     } else {

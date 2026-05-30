@@ -301,3 +301,5 @@ await updateStep(projectId, targetId, { status: nextStatus })  // CORRECT
 Committed 2250: dba26a5
 
 1017. [x] public users cant cycle between public tabs, theyre stuck on the one admine viewed last - Fixed: Modified `loadTabs` in useTabStore.ts to validate activeTabId against loaded tabs and reset to first available tab if the current one is not accessible (e.g., a private tab viewed by admin that public users can't see).
+
+Committed 2306: 5ecdf8d
