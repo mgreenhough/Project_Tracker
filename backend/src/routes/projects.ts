@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { projectCreateSchema, projectUpdateSchema, stepCreateSchema, stepUpdateSchema } from '../validation/schemas.js';
-import { appendLog } from '../logger.js';
 
 const router = Router();
 
@@ -241,7 +240,7 @@ router.put('/:projectId/steps/:stepId', requireAuth, (req: AuthRequest, res) => 
 
   const existing = db.prepare(`SELECT * FROM steps WHERE id = ? AND project_id = ?`).get(stepId, projectId);
   if (!existing) {
-    appendLog('warn', 'Step not found for update', { params: req.params, body: req.body });
+    // Silently skip - race condition during step creation
     res.status(404).json({ error: 'Step not found' });
     return;
   }
@@ -274,8 +273,8 @@ router.delete('/:projectId/steps/:stepId', requireAuth, (req: AuthRequest, res) 
 
   const existing = db.prepare(`SELECT * FROM steps WHERE id = ? AND project_id = ?`).get(stepId, projectId);
   if (!existing) {
-    appendLog('warn', 'Step not found for delete', { params: req.params });
-    res.status(404).json({ error: 'Step not found' });
+    // Silently skip - already deleted or race condition
+    res.status(204).send();
     return;
   }
 
