@@ -38,9 +38,11 @@ const MainLayout = memo(function MainLayout() {
   const loadTabs = useTabStore((s) => s.loadTabs)
 
   useEffect(() => {
-    loadProjects()
-    loadTabs()
-  }, [loadProjects, loadTabs])
+    if (!authLoading) {
+      loadProjects()
+      loadTabs()
+    }
+  }, [loadProjects, loadTabs, authLoading])
 
   const active = activeProjectsSorted(projects, activeTabId)
   const archived = archivedProjectsSorted(projects, activeTabId)

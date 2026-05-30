@@ -194,3 +194,7 @@ Committed 2321: af4fc30
     Root cause: KHORTECH tab was created before tabs were implemented and has a legacy ID that's not in UUID format. The validation schema required `tabId` to be a UUID, causing validation failures when creating/updating projects in that tab.
     
     Solution: Modified `projectCreateSchema` in backend/src/validation/schemas.ts to accept any string for `tabId` instead of requiring UUID format, allowing legacy tab IDs to work properly.
+
+Committed 1010: 0d5bbd5
+
+1012. [] On fresh open, BOARD tab only appears after a refresh. Tabs not populating properly on first load?

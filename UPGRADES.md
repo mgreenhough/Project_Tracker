@@ -167,15 +167,16 @@ Committed b5324c0 with message "fix: resolve all 100 series issues"
 ---
 
 ### Phase 1: Data Model & Backend — Users Table & Auth
-- [ ] 1.1 Create `users` table with fields: `id`, `email`, `password_hash`, `role` ('admin' | 'user'), `display_name`, `created_at`, `updated_at`
+- [ ] 1.1 Create `users` table with fields: `id`, `email`, `password_hash`, `role` ('admin' | 'user'), `display_name`, `status` ('pending' | 'active' | 'blocked'), `created_at`, `updated_at`
 - [ ] 1.2 Add `user_id` foreign key to `projects` and `tabs` tables (nullable initially, backfill for existing data)
 - [ ] 1.3 Write migration: assign existing projects/tabs to the default admin user
 - [ ] 1.4 Add `registerSchema` to `backend/src/validation/schemas.ts` (email, password, displayName)
-- [ ] 1.5 Create `POST /api/auth/register` endpoint — hash password with bcrypt, default role `user`, reject duplicate emails
-- [ ] 1.6 Update `POST /api/auth/login` to query `users` table instead of hardcoded admin check
-- [ ] 1.7 Update `POST /api/auth/refresh` to verify user still exists in DB
+- [ ] 1.5 Create `POST /api/auth/register` endpoint — hash password with bcrypt, default role `user`, default status `pending`, reject duplicate emails
+- [ ] 1.6 Update `POST /api/auth/login` to query `users` table instead of hardcoded admin check — reject login if status is 'pending' or 'blocked'
+- [ ] 1.7 Update `POST /api/auth/refresh` to verify user still exists in DB and status is 'active'
 - [ ] 1.8 Update `generateTokens` to use real `user.id` and dynamic `role` from DB
-- [ ] 1.9 Seed default admin user in migration if `users` table is empty
+- [ ] 1.9 Seed default admin user in migration if `users` table is empty (with status 'active')
+- [ ] 1.10 Add index on `users.status` for efficient filtering
 
 ### Phase 2: Middleware & Authorization
 - [ ] 2.1 Update `backend/src/middleware/auth.ts` `requireAuth` to attach full user object (id, email, role) from DB lookup (or cache)
@@ -194,9 +195,11 @@ Committed b5324c0 with message "fix: resolve all 100 series issues"
 - [ ] 3.8 Update `steps` routes to inherit project ownership checks (steps follow parent project visibility)
 
 ### Phase 4: Admin User Management API
-- [ ] 4.1 Create `GET /api/users` endpoint (admin only) — list all users
+- [ ] 4.1 Create `GET /api/users` endpoint (admin only) — list all users with filtering by status (pending, active, blocked)
 - [ ] 4.2 Create `PATCH /api/users/:id/role` endpoint (admin only) — promote/demote user role
-- [ ] 4.3 Create `DELETE /api/users/:id` endpoint (admin only) — delete user and optionally reassign or cascade their data
+- [ ] 4.3 Create `PATCH /api/users/:id/status` endpoint (admin only) — approve ('pending' → 'active'), block ('active' → 'blocked'), or unblock ('blocked' → 'active') users
+- [ ] 4.4 Create `DELETE /api/users/:id` endpoint (admin only) — delete user and optionally reassign or cascade their data (also terminates all active sessions)
+- [ ] 4.5 Add `POST /api/users/:id/kick` endpoint (admin only) — immediately invalidate all JWT tokens for a user (force logout)
 
 ### Phase 5: Frontend — Auth & Registration UI
 - [ ] 5.1 Build registration form component (email, password, display name)
@@ -207,9 +210,16 @@ Committed b5324c0 with message "fix: resolve all 100 series issues"
 
 ### Phase 6: Frontend — User Management (Admin)
 - [ ] 6.1 Build `<UserManagement />` page/component accessible only to admins
-- [ ] 6.2 Display user list with role badges
-- [ ] 6.3 Add role toggle (user ↔ admin) with confirmation
-- [ ] 6.4 Add user deletion with data-reassignment options
+- [ ] 6.2 Display user list with role badges and status badges (pending/active/blocked)
+- [ ] 6.3 Add filtering tabs: "All Users", "Pending Approval", "Active", "Blocked"
+- [ ] 6.4 Add "Approve" button for pending users (changes status to 'active')
+- [ ] 6.5 Add "Block User" button for active users (changes status to 'blocked', prevents login)
+- [ ] 6.6 Add "Unblock User" button for blocked users (changes status to 'active')
+- [ ] 6.7 Add "Kick User" button to immediately force logout (invalidates all sessions)
+- [ ] 6.8 Add role toggle (user ↔ admin) with confirmation
+- [ ] 6.9 Add user deletion with data-reassignment options
+- [ ] 6.10 Show pending user count badge in admin navigation/header
+- [ ] 6.11 Add confirmation dialogs for all destructive actions (block, kick, delete)
 
 ### Phase 7: Frontend — Data Scoping & Visibility Controls
 - [ ] 7.1 Update project store to fetch only user-owned private projects for standard users
@@ -220,15 +230,36 @@ Committed b5324c0 with message "fix: resolve all 100 series issues"
 - [ ] 7.6 Show public/private toggle only for admin users
 
 ### Phase 8: Testing & Polish
-- [ ] 8.1 Write unit tests for `POST /api/auth/register` (success, duplicate email, weak password)
-- [ ] 8.2 Write unit tests for user-scoped project CRUD (owner can edit, other user cannot)
-- [ ] 8.3 Write unit tests for admin-only user management endpoints
-- [ ] 8.4 Verify standard users cannot create or view public data
-- [ ] 8.5 Verify admin public data is visible to unauthenticated visitors
-- [ ] 8.6 Update frontend tests for new auth flows
-- [ ] 8.7 Update documentation (README, API docs)
+- [ ] 8.1 Write unit tests for `POST /api/auth/register` (success, duplicate email, weak password, default status is 'pending')
+- [ ] 8.2 Write unit tests for login rejection when status is 'pending' or 'blocked'
+- [ ] 8.3 Write unit tests for user-scoped project CRUD (owner can edit, other user cannot)
+- [ ] 8.4 Write unit tests for admin-only user management endpoints (approve, block, unblock, kick)
+- [ ] 8.5 Write unit tests for token invalidation on kick/block
+- [ ] 8.6 Verify standard users cannot create or view public data
+- [ ] 8.7 Verify admin public data is visible to unauthenticated visitors
+- [ ] 8.8 Verify pending users cannot login until approved
+- [ ] 8.9 Verify blocked users cannot login
+- [ ] 8.10 Update frontend tests for new auth flows
+- [ ] 8.11 Update documentation (README, API docs) with admin approval workflow
 
 ---
 
-**Estimated effort:** 2–3 days for a single developer familiar with the stack.
-**Risk areas:** Data migration (backfilling `user_id` on existing rows), enforcing private-only for standard users at both API and DB levels, preventing unauthorized cross-user data access.
+### Phase 9: Security & Bot Prevention
+- [ ] 9.1 Add rate limiting to `POST /api/auth/register` endpoint (e.g., max 5 registrations per IP per hour)
+- [ ] 9.2 Add email validation and sanitization to prevent malformed/spam emails
+- [ ] 9.3 Implement CAPTCHA or similar challenge on registration form (optional but recommended)
+- [ ] 9.4 Add logging for all user status changes (approve, block, kick) with admin user ID and timestamp
+- [ ] 9.5 Add notification system for admins when new users register (email or in-app notification)
+- [ ] 9.6 Consider adding email verification step before admin approval (optional enhancement)
+
+---
+
+**Estimated effort:** 3–4 days for a single developer familiar with the stack.
+**Risk areas:** Data migration (backfilling `user_id` on existing rows), enforcing private-only for standard users at both API and DB levels, preventing unauthorized cross-user data access, token invalidation strategy for kicked/blocked users, rate limiting configuration to prevent legitimate users from being blocked.
+
+**Security Benefits:**
+- **Admin approval workflow** prevents bot spam by requiring manual approval of all new accounts
+- **Block/kick functionality** allows immediate response to malicious users
+- **Status-based login checks** prevent unauthorized access from pending/blocked accounts
+- **Rate limiting** on registration prevents automated bot attacks
+- **Audit logging** provides accountability trail for all admin actions
