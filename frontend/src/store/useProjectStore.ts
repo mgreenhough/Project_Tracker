@@ -461,45 +461,43 @@ export const useProjectStore = create<ProjectStore>()(
           DECISION_POINT: 'COMPLETE',
           COMPLETE: 'CLEAR',
         }
-        set((state) => {
-          const project = state.projects.find((p) => p.id === projectId)
-          const step = project?.steps.find((s) => s.id === stepId)
-          const nextStatus = step ? cycle[step.status] : 'CLEAR'
-          return {
-            projects: state.projects.map((p) =>
-              p.id === projectId
-                ? {
-                    ...p,
-                    steps: p.steps.map((s) =>
-                      s.id === stepId
-                        ? { ...s, status: nextStatus, updatedAt: now() }
-                        : s
-                    ),
-                    updatedAt: now(),
-                  }
-                : p
-            ),
-          }
-        })
-
-        if (get().isAdmin) {
-          const project = get().projects.find((p) => p.id === projectId)
-          const step = project?.steps.find((s) => s.id === stepId)
-          if (step) {
-            ;(async () => {
-              try {
-                let targetId = stepId
-                if (get().pendingStepCreates.has(stepId)) {
-                  console.debug('[useProjectStore] cycleStepStatus: waiting for pending create', stepId)
-                  targetId = await get().pendingStepCreates.get(stepId)!
-                  console.debug('[useProjectStore] cycleStepStatus: resolved pending create', stepId, '->', targetId)
+        
+        // Calculate next status BEFORE state update
+        const project = get().projects.find((p) => p.id === projectId)
+        const step = project?.steps.find((s) => s.id === stepId)
+        const nextStatus = step ? cycle[step.status] : 'CLEAR'
+        
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  steps: p.steps.map((s) =>
+                    s.id === stepId
+                      ? { ...s, status: nextStatus, updatedAt: now() }
+                      : s
+                  ),
+                  updatedAt: now(),
                 }
-                await updateStep(projectId, targetId, { status: step.status })
-              } catch (err: any) {
-                console.error('[useProjectStore] cycleStepStatus failed', err)
+              : p
+          ),
+        }))
+
+        if (get().isAdmin && step) {
+          ;(async () => {
+            try {
+              let targetId = stepId
+              if (get().pendingStepCreates.has(stepId)) {
+                console.debug('[useProjectStore] cycleStepStatus: waiting for pending create', stepId)
+                targetId = await get().pendingStepCreates.get(stepId)!
+                console.debug('[useProjectStore] cycleStepStatus: resolved pending create', stepId, '->', targetId)
               }
-            })()
-          }
+              // FIX: Use nextStatus instead of step.status
+              await updateStep(projectId, targetId, { status: nextStatus })
+            } catch (err: any) {
+              console.error('[useProjectStore] cycleStepStatus failed', err)
+            }
+          })()
         }
       },
     }),

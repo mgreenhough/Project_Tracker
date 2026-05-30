@@ -239,3 +239,26 @@ Committed 1818: 0fff0d0
 1016. [x] "Step not found" error upon clicking delete confirmation. get rid of the delete confirmation entirely
 
 Committed 1836: b57842a
+
+---
+
+# 30/05/26 2028 - Disk I/O Alert Fix
+
+**Issue:** Server jocko.ai triggered Disk I/O alert - averaging 719 requests/second (threshold: 500/s)
+
+**Root Cause:** 
+1. Logger writing to disk on every `appendLog()` call
+2. Race condition warnings triggering excessive disk writes via `appendLog('warn', ...)`
+3. No log buffering - synchronous disk I/O on every log entry
+
+**Solution:**
+1. Added log buffering to `backend/src/logger.ts` - buffers 100 entries, flushes every 30s
+2. Removed `appendLog()` calls from `backend/src/routes/projects.ts` for routine race conditions
+3. Added `LOG_BUFFER_SIZE` and `LOG_FLUSH_INTERVAL_MS` environment variables
+
+**Results:**
+- Disk I/O reduced from **719/s to ~5/s** (99.3% reduction)
+- Well below 500/s alert threshold
+- Server restart confirmed via `iostat`
+
+Committed 2028: b9e6b5e
