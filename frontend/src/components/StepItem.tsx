@@ -8,6 +8,8 @@ import type { Step } from '../types'
 interface StepItemProps {
   step: Step
   isAdmin: boolean
+  isProjectFront?: boolean
+  onBringToFront?: () => void
 }
 
 const statusConfig = {
@@ -44,7 +46,7 @@ function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number)
   )
 }
 
-export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps) {
+export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront = true, onBringToFront }: StepItemProps) {
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
   const deleteStep = useProjectStore((s) => s.deleteStep)
@@ -60,15 +62,18 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
 
   const debouncedUpdateDate = useDebounce((projectId: string, stepId: string, dueDate: string | null) => {
     updateStep(projectId, stepId, { dueDate })
-  }, 500)
+  }, 800)
 
   useEffect(() => {
     setContentValue(step.content)
   }, [step.content])
 
   useEffect(() => {
-    setDateValue(step.dueDate || '')
-  }, [step.dueDate])
+    // Only update from prop when not actively editing
+    if (!editingDate) {
+      setDateValue(step.dueDate || '')
+    }
+  }, [step.dueDate, editingDate])
 
   useEffect(() => {
     if (editingContent && contentInputRef.current) {
@@ -144,8 +149,13 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   }, [handleDateConfirm, handleDateCancel])
 
   const handleStatusClick = useCallback(() => {
-    if (isAdmin) cycleStepStatus(step.projectId, step.id)
-  }, [isAdmin, cycleStepStatus, step.projectId, step.id])
+    if (!isAdmin) return
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    cycleStepStatus(step.projectId, step.id)
+  }, [isAdmin, isProjectFront, onBringToFront, cycleStepStatus, step.projectId, step.id])
 
   const handleContentInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -154,8 +164,13 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   }, [])
 
   const handleContentSpanClick = useCallback(() => {
-    if (isAdmin) setEditingContent(true)
-  }, [isAdmin])
+    if (!isAdmin) return
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    setEditingContent(true)
+  }, [isAdmin, isProjectFront, onBringToFront])
 
   const handleDateInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setDateValue(e.target.value)
@@ -167,12 +182,43 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
   }, [step.projectId, step.id, debouncedUpdateDate])
 
   const handleDateSpanClick = useCallback(() => {
-    if (isAdmin) setEditingDate(true)
-  }, [isAdmin])
+    if (!isAdmin) return
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    setEditingDate(true)
+  }, [isAdmin, isProjectFront, onBringToFront])
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleDeleteClick = useCallback(() => {
-    deleteStep(step.projectId, step.id)
-  }, [deleteStep, step.projectId, step.id])
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      deleteTimeoutRef.current = setTimeout(() => {
+        setConfirmDelete(false)
+      }, 3000)
+    } else {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current)
+      }
+      deleteStep(step.projectId, step.id)
+      setConfirmDelete(false)
+    }
+  }, [isProjectFront, onBringToFront, confirmDelete, deleteStep, step.projectId, step.id])
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const {
     attributes,
@@ -261,11 +307,13 @@ export const StepItem = memo(function StepItem({ step, isAdmin }: StepItemProps)
         <button
           type="button"
           onClick={handleDeleteClick}
-          className="text-gray-600 active:text-neon-red transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active"
-          title="Delete step"
-          aria-label="Delete step"
+          className={`transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active ${
+            confirmDelete ? 'text-neon-red bg-neon-red/10 animate-pulse' : 'text-gray-600 active:text-neon-red'
+          }`}
+          title={confirmDelete ? 'Click again to confirm delete' : 'Delete step'}
+          aria-label={confirmDelete ? 'Confirm delete step' : 'Delete step'}
         >
-          ×
+          {confirmDelete ? '!' : '×'}
         </button>
       )}
     </div>

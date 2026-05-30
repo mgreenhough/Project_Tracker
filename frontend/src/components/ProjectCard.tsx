@@ -33,6 +33,7 @@ interface ProjectCardProps {
     attributes: DraggableAttributes
     listeners: SyntheticListenerMap | undefined
   }
+  onBringToFront?: () => void
 }
 
 function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number) {
@@ -46,7 +47,7 @@ function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number)
   )
 }
 
-export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchived = false, isFront = false, isLeftmost = false, dragHandleProps }: ProjectCardProps) {
+export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchived = false, isFront = false, isLeftmost = false, dragHandleProps, onBringToFront }: ProjectCardProps) {
   const reorderSteps = useProjectStore((s) => s.reorderSteps)
   const updateProject = useProjectStore((s) => s.updateProject)
   const addStep = useProjectStore((s) => s.addStep)
@@ -83,15 +84,18 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
 
   const debouncedUpdateDate = useDebounce((id: string, dueDate: string | null) => {
     updateProject(id, { dueDate })
-  }, 500)
+  }, 800)
 
   useEffect(() => {
     setTitleValue(project.title)
   }, [project.title])
 
   useEffect(() => {
-    setDateValue(project.dueDate || '')
-  }, [project.dueDate])
+    // Only update from prop when not actively editing
+    if (!editingDate) {
+      setDateValue(project.dueDate || '')
+    }
+  }, [project.dueDate, editingDate])
 
   useEffect(() => {
     if (editingTitle && titleInputRef.current) {
@@ -142,6 +146,17 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
     }
   }, [handleDateConfirm, handleDateCancel])
 
+  // Wrapper for actions that require project to be at front
+  const requireFront = useCallback((action: () => void) => {
+    return () => {
+      if (!isFront && onBringToFront) {
+        onBringToFront()
+        return
+      }
+      action()
+    }
+  }, [isFront, onBringToFront])
+
   const handleAddStep = useCallback(() => {
     const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.stepOrder)) + 1 : 0
     addStep(project.id, {
@@ -151,6 +166,32 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
       dueDate: null,
     })
   }, [project.id, steps, addStep])
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleDeleteClick = useCallback(() => {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      deleteTimeoutRef.current = setTimeout(() => {
+        setConfirmDelete(false)
+      }, 3000)
+    } else {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current)
+      }
+      deleteProject(project.id)
+      setConfirmDelete(false)
+    }
+  }, [confirmDelete, deleteProject, project.id])
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -268,7 +309,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
         >
           <div className="flex flex-col gap-1 mt-1">
             {steps.map((step) => (
-              <StepItem key={step.id} step={step} isAdmin={isAdmin} />
+              <StepItem key={step.id} step={step} isAdmin={isAdmin} isProjectFront={isFront} onBringToFront={onBringToFront} />
             ))}
             {steps.length === 0 && (
               <span className="text-xs text-gray-600 italic py-1">No steps</span>
@@ -281,7 +322,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
         <div className="flex items-center gap-2 mt-1">
           <button
             type="button"
-            onClick={handleAddStep}
+            onClick={requireFront(handleAddStep)}
             className="text-xs text-gray-500 active:text-neon-green transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
             title="Add step"
           >
@@ -289,7 +330,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
           </button>
           <button
             type="button"
-            onClick={() => archiveProject(project.id)}
+            onClick={requireFront(() => archiveProject(project.id))}
             className="text-xs text-gray-500 active:text-neon-orange transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
             title="Archive project"
           >
@@ -297,11 +338,13 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
           </button>
           <button
             type="button"
-            onClick={() => deleteProject(project.id)}
-            className="text-xs text-gray-500 active:text-neon-red transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active"
-            title="Delete project"
+            onClick={requireFront(handleDeleteClick)}
+            className={`text-xs transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active ${
+              confirmDelete ? 'text-neon-red bg-neon-red/10 animate-pulse' : 'text-gray-500 active:text-neon-red'
+            }`}
+            title={confirmDelete ? 'Click again to confirm delete' : 'Delete project'}
           >
-            ×
+            {confirmDelete ? '!' : '×'}
           </button>
         </div>
       )}
@@ -309,7 +352,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
         <div className="flex items-center gap-2 mt-1">
           <button
             type="button"
-            onClick={() => dearchiveProject(project.id)}
+            onClick={requireFront(() => dearchiveProject(project.id))}
             className="text-xs text-gray-500 active:text-neon-green transition-colors px-3 py-2 rounded active:bg-white/5 tap-active"
             title="De-archive project"
           >
@@ -317,11 +360,13 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
           </button>
           <button
             type="button"
-            onClick={() => deleteProject(project.id)}
-            className="text-xs text-gray-500 active:text-neon-red transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active"
-            title="Delete project"
+            onClick={requireFront(handleDeleteClick)}
+            className={`text-xs transition-colors px-3 py-2 rounded active:bg-white/5 ml-auto tap-active ${
+              confirmDelete ? 'text-neon-red bg-neon-red/10 animate-pulse' : 'text-gray-500 active:text-neon-red'
+            }`}
+            title={confirmDelete ? 'Click again to confirm delete' : 'Delete project'}
           >
-            ×
+            {confirmDelete ? '!' : '×'}
           </button>
         </div>
       )}

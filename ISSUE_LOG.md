@@ -197,4 +197,12 @@ Committed 2321: af4fc30
 
 Committed 1010: 0d5bbd5
 
-1012. [] On fresh open, BOARD tab only appears after a refresh. Tabs not populating properly on first load?
+1012. [x] On fresh open, BOARD tab only appears after a refresh. Tabs not populating properly on first load?
+
+Committed 1030: 45e4346
+
+1013. [] Due date needs second attempt to save. If entering '15/07/26' on first attemp, text just disappears as soon as the '6' is entered and you have to re-enter it.
+
+1014. [] Vertical space of project window should be trimmed to size of project stack.
+
+1015. [] task or project deletes shouldn't be instant. my fat finger just deleted a task on mobile when I was just trying to bring that project to the front. first click, bring project to front. second - delete.

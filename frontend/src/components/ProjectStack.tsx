@@ -132,6 +132,7 @@ const SortableProjectCard = memo(function SortableProjectCard({
         isFront={isFront}
         isLeftmost={index === 0}
         dragHandleProps={isAdmin ? { attributes, listeners } : undefined}
+        onBringToFront={() => onBringToFront(project.id)}
       />
     </div>
   )
@@ -340,8 +341,8 @@ export const ProjectStack = memo(function ProjectStack({ projects, isAdmin, onRe
             style={{
               paddingLeft: 0,
               alignItems: 'flex-start',
-              paddingTop: orderedProjects.length > 1 ? (orderedProjects.length - 1) * 52 : 0,
-              minHeight: 420 + (orderedProjects.length > 1 ? (orderedProjects.length - 1) * 52 : 0),
+              paddingTop: orderedProjects.length > 1 ? Math.min((orderedProjects.length - 1) * 52, 200) : 0,
+              minHeight: 'auto',
             }}
           >
             {orderedProjects.map((project, index) => (
