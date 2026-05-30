@@ -242,7 +242,7 @@ Committed 1836: b57842a
 
 ---
 
-# 30/05/26 2028 - Disk I/O Alert Fix
+# 30/05/26 2028 - Disk I/O Alert Fix (Part 1)
 
 **Issue:** Server jocko.ai triggered Disk I/O alert - averaging 719 requests/second (threshold: 500/s)
 
@@ -262,3 +262,42 @@ Committed 1836: b57842a
 - Server restart confirmed via `iostat`
 
 Committed 2028: b9e6b5e
+
+---
+
+# 30/05/26 2250 - Disk I/O Alert Fix (Part 2) - cycleStepStatus Bug
+
+**Issue:** Disk I/O alert triggered AGAIN immediately after clicking task status checkbox on BOARD tab. Status checkboxes unresponsive at first, then glitch.
+
+**Root Cause:** Bug in `frontend/src/store/useProjectStore.ts` `cycleStepStatus` function:
+- Calculated `nextStatus` correctly for local state update
+- BUT API call used old `step.status` instead of `nextStatus`
+- This caused status to NOT actually update on server
+- User clicks multiple times rapidly → each click triggers database write → disk I/O spike
+
+**Problem Code:**
+```typescript
+// Line 467 - correct
+const nextStatus = step ? cycle[step.status] : 'CLEAR'
+
+// Line 497 - BUG! Used old status
+await updateStep(projectId, targetId, { status: step.status })  // WRONG
+```
+
+**Solution:** Calculate `nextStatus` BEFORE state update, then use it in both state update AND API call:
+```typescript
+// Calculate next status BEFORE state update
+const nextStatus = step ? cycle[step.status] : 'CLEAR'
+
+// Use nextStatus in API call
+await updateStep(projectId, targetId, { status: nextStatus })  // CORRECT
+```
+
+**Results:**
+- Status checkbox now works correctly on first click
+- Single API call per click instead of multiple rapid retries
+- No more I/O spikes when clicking checkboxes
+
+Committed 2250: dba26a5
+
+1017. [x] public users cant cycle between public tabs, theyre stuck on the one admine viewed last - Fixed: Modified `loadTabs` in useTabStore.ts to validate activeTabId against loaded tabs and reset to first available tab if the current one is not accessible (e.g., a private tab viewed by admin that public users can't see).

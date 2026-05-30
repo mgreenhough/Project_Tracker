@@ -39,9 +39,15 @@ export const useTabStore = create<TabStore>()(
           const data = await fetchTabs()
           const tabs = data.tabs as Tab[]
           set({ tabs, isLoading: false })
-          // Auto-select first tab if none active
-          if (!get().activeTabId && tabs.length > 0) {
-            set({ activeTabId: tabs[0].id })
+          // Ensure active tab is valid for current user
+          const currentActiveId = get().activeTabId
+          const tabIds = new Set(tabs.map((t) => t.id))
+          if (tabs.length > 0) {
+            if (!currentActiveId || !tabIds.has(currentActiveId)) {
+              set({ activeTabId: tabs[0].id })
+            }
+          } else {
+            set({ activeTabId: null })
           }
         } catch (err: any) {
           set({ error: err.message || 'Failed to load tabs', isLoading: false })
