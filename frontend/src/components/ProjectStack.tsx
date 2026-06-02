@@ -95,7 +95,7 @@ const SortableProjectCard = memo(function SortableProjectCard({
     isDragging,
   } = useSortable({ id: project.id })
 
-  const isFront = frontProjectId === project.id
+  const isFront = frontProjectId === project.id || (frontProjectId === null && index === 0)
   const baseZIndex = isDragging ? 100 : total - index
   const zIndex = isFront ? 200 : baseZIndex
   const hasFront = frontProjectId !== null

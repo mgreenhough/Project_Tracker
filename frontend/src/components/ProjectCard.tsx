@@ -216,7 +216,9 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
       const oldIndex = steps.findIndex((s) => s.id === active.id)
       const newIndex = steps.findIndex((s) => s.id === over.id)
       const reordered = arrayMove(steps, oldIndex, newIndex)
-      reorderSteps(project.id, reordered.map((s) => s.id))
+      reorderSteps(project.id, reordered.map((s) => s.id)).catch((err) => {
+        console.error('[ProjectCard] reorderSteps failed:', err)
+      })
     }
   }, [steps, project.id, reorderSteps])
 
@@ -254,7 +256,9 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
             value={titleValue}
             onChange={(e) => {
               setTitleValue(e.target.value)
-              debouncedUpdateTitle(project.id, e.target.value)
+              if (e.target.value.trim()) {
+                debouncedUpdateTitle(project.id, e.target.value)
+              }
             }}
             onBlur={handleTitleConfirm}
             onKeyDown={handleTitleKeyDown}

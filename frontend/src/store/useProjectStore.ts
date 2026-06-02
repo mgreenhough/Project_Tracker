@@ -46,7 +46,7 @@ interface ProjectStoreActions {
   addStep: (projectId: string, step: Omit<Step, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>) => Promise<Step>
   updateStep: (projectId: string, stepId: string, updates: Partial<Omit<Step, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>>) => void
   deleteStep: (projectId: string, stepId: string) => void
-  reorderSteps: (projectId: string, orderedIds: string[]) => void
+  reorderSteps: (projectId: string, orderedIds: string[]) => Promise<void>
   cycleStepStatus: (projectId: string, stepId: string) => void
 }
 
@@ -420,7 +420,7 @@ export const useProjectStore = create<ProjectStore>()(
         }
       },
 
-      reorderSteps: (projectId, orderedIds) => {
+      reorderSteps: async (projectId, orderedIds) => {
         set((state) => ({
           projects: state.projects.map((p) => {
             if (p.id !== projectId) return p
@@ -436,8 +436,8 @@ export const useProjectStore = create<ProjectStore>()(
         }))
 
         if (get().isAdmin) {
-          orderedIds.forEach((id, index) => {
-            ;(async () => {
+          await Promise.all(
+            orderedIds.map(async (id, index) => {
               try {
                 let targetId = id
                 if (get().pendingStepCreates.has(id)) {
@@ -445,12 +445,19 @@ export const useProjectStore = create<ProjectStore>()(
                   targetId = await get().pendingStepCreates.get(id)!
                   console.debug('[useProjectStore] reorderSteps: resolved pending create', id, '->', targetId)
                 }
+                // Verify step still exists in current state before calling API
+                const project = get().projects.find((p) => p.id === projectId)
+                const stepExists = project?.steps.some((s) => s.id === targetId)
+                if (!stepExists) {
+                  console.debug('[useProjectStore] reorderSteps: step not found in current state, skipping API call', targetId)
+                  return
+                }
                 await updateStep(projectId, targetId, { stepOrder: index })
               } catch (err: any) {
                 console.error('[useProjectStore] reorderSteps failed', { stepId: id, err })
               }
-            })()
-          })
+            })
+          )
         }
       },
 

@@ -300,6 +300,39 @@ await updateStep(projectId, targetId, { status: nextStatus })  // CORRECT
 
 Committed 2250: dba26a5
 
-1017. [x] public users cant cycle between public tabs, theyre stuck on the one admine viewed last - Fixed: Modified `loadTabs` in useTabStore.ts to validate activeTabId against loaded tabs and reset to first available tab if the current one is not accessible (e.g., a private tab viewed by admin that public users can't see).
+1017. [x] public users cant cycle between public tabs, theyre stuck on the one admine viewed last - Fixed Part 1: Modified `loadTabs` in useTabStore.ts to validate activeTabId against loaded tabs. Fixed Part 2: Modified `handleNameClick` in TabBar.tsx to not call `e.stopPropagation()` for non-admins, allowing the click to propagate to the parent onClick handler that switches tabs.
 
 Committed 2306: 5ecdf8d
+2313: bb85acf
+
+1018. [x] "validation failed" error when i opened a new project, started editing the title but changed it, backspaced to blank, ERROR fired here, continued to re-enter correct title and save. saved fine but i want to make sure the error isnt an issue and stop it from coming up in that circumstance.
+    
+    Root cause: The `onChange` handler in ProjectCard called `debouncedUpdateTitle` on every keystroke, including when the title was backspaced to blank. The backend validation requires `title: z.string().min(1)`, so an empty string fails validation with "validation failed".
+    
+    Solution: Added a guard in the `onChange` handler to only call `debouncedUpdateTitle` when `e.target.value.trim()` is truthy (non-empty). When the user backspaces to blank, no API call is made, so no validation error occurs. The `handleTitleConfirm` on blur/Enter already handles empty titles by falling back to the original project title.
+
+1019. [x] task drag reorder seems to only persist on second try. first fails.
+    
+    Root cause: `reorderSteps` was using fire-and-forget async IIFEs inside `orderedIds.forEach()`, meaning:
+    1. API calls were not awaited - could fail silently or race with other operations
+    2. No Promise.all meant the function returned immediately without confirming saves
+    3. Missing step existence check could cause "step not found" errors if IDs changed
+    
+    Solution: Refactored `reorderSteps` to be `async` and use `Promise.all()` to await all API calls:
+    - Changed return type from `void` to `Promise<void>`
+    - Wrapped `orderedIds.map()` in `Promise.all()` to ensure all updates complete
+    - Added step existence check before API call to skip stale IDs
+    
+    Note: The drag handler in ProjectCard.tsx (`handleDragEnd`) already awaits `reorderSteps` properly, so this change ensures the drag operation waits for server confirmation.
+
+1020. [x] part of existing problem that was fixed (you need to click a card to bring it to the front before you can edit it) the front card is already at the fron and should have instants edits when clicked (add/delete step, edit task ect)
+
+    Root cause: The `isFront` flag was only `true` when a card was explicitly clicked to bring it to front (`frontProjectId === project.id`). When no card had been clicked, `frontProjectId` was `null` and `isFront` was `false` for ALL cards - including the leftmost card which is naturally at the front due to z-index ordering. The `requireFront` wrapper in `ProjectCard.tsx` then blocked all edits on this "naturally front" card.
+
+    Solution: Modified `isFront` calculation in `ProjectStack.tsx` to treat the leftmost card as front when no explicit front has been set:
+    ```typescript
+    const isFront = frontProjectId === project.id || (frontProjectId === null && index === 0)
+    ```
+    This ensures the leftmost (naturally front) card has instant edit access without requiring a click.
+
+Committed 
