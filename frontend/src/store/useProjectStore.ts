@@ -20,6 +20,7 @@ interface ProjectStoreState {
   pendingStepCreates: Map<string, Promise<string>>
   _pendingCreateResolvers: Map<string, (id: string) => void>
   _clientStepIds: Set<string> // Track client-side step IDs that haven't been created on server yet
+  _stepIdMap: Map<string, string> // Maps client IDs → server IDs after creation
 }
 
 type ProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'steps' | 'priorityIndex' | 'isDeleted'>
@@ -66,6 +67,7 @@ export const useProjectStore = create<ProjectStore>()(
       pendingStepCreates: new Map<string, Promise<string>>(),
       _pendingCreateResolvers: new Map<string, (id: string) => void>(),
       _clientStepIds: new Set<string>(),
+      _stepIdMap: new Map<string, string>(),
       projects: [],
       isAdmin: false,
       isLoading: false,
@@ -282,6 +284,7 @@ export const useProjectStore = create<ProjectStore>()(
             get()._pendingCreateResolvers.delete(newStep.id)
             get().pendingStepCreates.delete(newStep.id)
             get()._clientStepIds.delete(newStep.id) // Remove from client IDs since it's now on server
+            get()._stepIdMap.set(newStep.id, data.step.id) // Map client ID → server ID for drag resolution
             return { ...newStep, id: data.step.id }
           } catch (err: any) {
             console.error('[useProjectStore] addStep failed', err)
@@ -368,6 +371,7 @@ export const useProjectStore = create<ProjectStore>()(
                 get()._pendingCreateResolvers.delete(stepId)
                 get().pendingStepCreates.delete(stepId)
                 get()._clientStepIds.delete(stepId) // Remove from client IDs since it's now on server
+                get()._stepIdMap.set(stepId, data.step.id) // Map client ID → server ID for drag resolution
                 // Step is now created with all updates applied - no need to call update API
                 return
               }
@@ -421,15 +425,21 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       reorderSteps: async (projectId, orderedIds) => {
+        // Resolve any stale client IDs in orderedIds to their server IDs
+        // This fixes a race condition where dnd-kit captured a client ID
+        // but the store has already updated to the server ID
+        const stepIdMap = get()._stepIdMap
+        const resolvedIds = orderedIds.map((id) => stepIdMap.get(id) ?? id)
+
         set((state) => ({
           projects: state.projects.map((p) => {
             if (p.id !== projectId) return p
             const map = new Map(p.steps.map((s) => [s.id, s]))
-            const reordered = orderedIds
+            const reordered = resolvedIds
               .map((id) => map.get(id))
               .filter((s): s is Step => !!s)
               .map((s, index) => ({ ...s, stepOrder: index, updatedAt: now() }))
-            const reorderedIds = new Set(orderedIds)
+            const reorderedIds = new Set(resolvedIds)
             const untouched = p.steps.filter((s) => !reorderedIds.has(s.id))
             return { ...p, steps: [...reordered, ...untouched], updatedAt: now() }
           }),
@@ -437,7 +447,7 @@ export const useProjectStore = create<ProjectStore>()(
 
         if (get().isAdmin) {
           await Promise.all(
-            orderedIds.map(async (id, index) => {
+            resolvedIds.map(async (id, index) => {
               try {
                 let targetId = id
                 if (get().pendingStepCreates.has(id)) {
