@@ -166,7 +166,6 @@ const MainLayout = memo(function MainLayout() {
       {/* Check-in modal */}
       <CheckInModal
         isOpen={isCheckInPending}
-        awaySeconds={awaySeconds}
         formattedAwayTime={formattedAwayTime}
         onResume={resumeTimer}
         onSkip={skipCheckIn}

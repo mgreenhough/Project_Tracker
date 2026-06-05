@@ -604,3 +604,5 @@ Summary of changes:
 - `frontend/src/components/StepItem.tsx` — add clock icon, timer list integration
 - `frontend/src/components/ProjectCard.tsx` — add total time display
 - `frontend/src/App.tsx` or project stack component — add tab total investment display
+
+Committed 05/06/26 3b39c0c

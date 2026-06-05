@@ -2,7 +2,6 @@ import { memo, useCallback } from 'react'
 
 interface CheckInModalProps {
   isOpen: boolean
-  awaySeconds: number
   formattedAwayTime: string
   onResume: () => void
   onSkip: () => void
@@ -10,7 +9,6 @@ interface CheckInModalProps {
 
 export const CheckInModal = memo(function CheckInModal({
   isOpen,
-  awaySeconds,
   formattedAwayTime,
   onResume,
   onSkip,
