@@ -17,6 +17,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
   const justSelectedRef = useRef(false)
   
   // Parse dd/mm/yy to Date
@@ -71,7 +72,12 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   // Close on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      // Check if click is inside input container OR inside calendar (portal)
+      const isInsideContainer = containerRef.current?.contains(target) ?? false
+      const isInsideCalendar = calendarRef.current?.contains(target) ?? false
+      
+      if (!isInsideContainer && !isInsideCalendar) {
         // Don't confirm if we just selected a date (prevents double confirm)
         if (justSelectedRef.current) {
           justSelectedRef.current = false
@@ -177,6 +183,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   
   const calendarContent = (
     <div 
+      ref={calendarRef}
       className="fixed z-[9999] p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl"
       style={{ 
         top: calendarPosition.top, 
