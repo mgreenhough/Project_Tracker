@@ -11,17 +11,18 @@ interface TimerListProps {
 }
 
 export const TimerList = memo(function TimerList({ stepId, projectId, isAdmin, isExpanded }: TimerListProps) {
-  const timers = useTimerStore((s) => s.timers.get(stepId) || [])
+  // Use a stable selector - return undefined if not found, handle in component
+  const timers = useTimerStore((s) => s.timers.get(stepId))
   const isLoading = useTimerStore((s) => s.isLoading)
   const loadTimers = useTimerStore((s) => s.loadTimers)
   const addTimer = useTimerStore((s) => s.addTimer)
 
   // Load timers when expanded for the first time
   useEffect(() => {
-    if (isExpanded && timers.length === 0 && !isLoading) {
+    if (isExpanded && (!timers || timers.length === 0) && !isLoading) {
       loadTimers(stepId)
     }
-  }, [isExpanded, stepId, timers.length, isLoading, loadTimers])
+  }, [isExpanded, stepId, timers, isLoading, loadTimers])
 
   const handleAddTimer = useCallback(() => {
     addTimer(stepId, projectId)
@@ -33,7 +34,7 @@ export const TimerList = memo(function TimerList({ stepId, projectId, isAdmin, i
     <div className="pl-8 pr-2 py-2 bg-black/20 rounded ml-4">
       {/* Timer list */}
       <div className="space-y-1">
-        {timers.map((timer: Timer) => (
+        {(timers || []).map((timer: Timer) => (
           <TimerItem
             key={timer.id}
             timer={timer}
@@ -56,7 +57,7 @@ export const TimerList = memo(function TimerList({ stepId, projectId, isAdmin, i
       )}
 
       {/* Empty state */}
-      {!isAdmin && timers.length === 0 && (
+      {!isAdmin && (!timers || timers.length === 0) && (
         <span className="text-sm text-gray-600 italic">No timers</span>
       )}
     </div>

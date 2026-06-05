@@ -2,8 +2,10 @@ import { memo, useState, useRef, useEffect, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectStore } from '../store/useProjectStore'
+import { useTimerStore } from '../store/useTimerStore'
 import { DueDateBadge } from './DueDateBadge'
 import { DatePicker } from './DatePicker'
+import { TimerList } from './TimerList'
 import type { Step } from '../types'
 
 interface StepItemProps {
@@ -40,6 +42,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
   const deleteStep = useProjectStore((s) => s.deleteStep)
+  const runningTimerId = useTimerStore((s) => s.runningTimerId)
   const config = statusConfig[step.status]
 
   const [editingContent, setEditingContent] = useState(false)
@@ -50,6 +53,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   const [editingDate, setEditingDate] = useState(false)
   const [dateValue, setDateValue] = useState(step.dueDate || '')
 
+  const [showTimers, setShowTimers] = useState(false)
 
   useEffect(() => {
     setContentValue(step.content)
@@ -169,6 +173,18 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     deleteStep(step.projectId, step.id)
   }, [isProjectFront, onBringToFront, deleteStep, step.projectId, step.id])
 
+  const handleClockClick = useCallback(() => {
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    setShowTimers((prev) => !prev)
+  }, [isProjectFront, onBringToFront])
+
+  // Get timer status
+  const timers = useTimerStore.getState().timers.get(step.id)
+  const hasTimers = timers && timers.length > 0
+  const hasRunningTimer = timers ? timers.some((t) => t.isRunning || t.id === runningTimerId) : false
 
   const {
     attributes,
@@ -252,6 +268,20 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
           </span>
         )}
 
+        {/* Clock icon for timers */}
+        <button
+          type="button"
+          onClick={handleClockClick}
+          className={`w-8 h-8 flex items-center justify-center rounded active:bg-white/5 transition-colors relative ${
+            showTimers ? 'text-neon-blue' : hasRunningTimer ? 'text-neon-green animate-pulse' : hasTimers ? 'text-gray-400' : 'text-gray-600'
+          } hover:text-neon-blue`}
+          title={showTimers ? 'Hide timers' : 'Show timers'}
+        >
+          ⏱
+          {hasTimers && !hasRunningTimer && !showTimers && (
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-gray-500 rounded-full" />
+          )}
+        </button>
 
         {isAdmin && (
           <button
@@ -266,6 +296,13 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
         )}
       </div>
 
+      {/* Timer list */}
+      <TimerList
+        stepId={step.id}
+        projectId={step.projectId}
+        isAdmin={isAdmin}
+        isExpanded={showTimers}
+      />
     </div>
   )
 })
