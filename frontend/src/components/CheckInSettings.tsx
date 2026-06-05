@@ -63,15 +63,18 @@ export const CheckInSettings = memo(function CheckInSettings() {
 
   return (
     <div className="relative inline-block">
-      <button
-        ref={buttonRef}
-        onClick={handleToggle}
-        className="px-3 py-2 text-xs text-neon-blue border border-neon-blue/40 bg-neon-blue/10 hover:bg-neon-blue/20 rounded-lg transition-colors tap-active flex items-center gap-2"
-        title="Check-in Settings"
-      >
-        <span>{preferences.enabled ? '⏱' : '🔕'}</span>
-        <span>{preferences.enabled ? currentLabel : 'Off'}</span>
-      </button>
+      <div className="flex flex-col items-center">
+        <span className="text-[10px] text-gray-500 mb-0.5">Check-in</span>
+        <button
+          ref={buttonRef}
+          onClick={handleToggle}
+          className="px-3 py-2 text-xs text-neon-blue border border-neon-blue/40 bg-neon-blue/10 hover:bg-neon-blue/20 rounded-lg transition-colors tap-active flex items-center gap-2"
+          title="Check-in Settings"
+        >
+          <span>{preferences.enabled ? '⏱' : '🔕'}</span>
+          <span>{preferences.enabled ? currentLabel : 'Off'}</span>
+        </button>
+      </div>
 
       {isOpen && (
         <div
