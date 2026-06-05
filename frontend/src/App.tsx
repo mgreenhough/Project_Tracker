@@ -125,7 +125,7 @@ const MainLayout = memo(function MainLayout() {
               </button>
               <button
                 onClick={logout}
-                className="px-3 py-2 text-xs text-gray-400 active:text-white transition-colors tap-active"
+                className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium active:bg-neon-blue/30 transition-colors tap-active"
               >
                 Logout
               </button>
