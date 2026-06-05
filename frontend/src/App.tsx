@@ -1,6 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
-import { useEffect, memo, useCallback } from 'react'
+import { useEffect, memo, useCallback, useState, useMemo } from 'react'
 import { useAuth } from './hooks/useAuth'
+import { useCheckIn } from './hooks/useCheckIn'
 import { useProjectStore } from './store/useProjectStore'
 import { useTabStore } from './store/useTabStore'
 import { activeProjectsSorted, archivedProjectsSorted } from './store/selectors'
@@ -8,6 +9,8 @@ import { ProjectStack } from './components/ProjectStack'
 import { ArchivedRow } from './components/ArchivedRow'
 import { LoginPage } from './components/LoginPage'
 import { TabBar } from './components/TabBar'
+import { CheckInModal } from './components/CheckInModal'
+import { fetchTabTotalTime } from './api'
 
 function SkeletonCard() {
   return (
@@ -37,6 +40,17 @@ const MainLayout = memo(function MainLayout() {
   const activeTabId = useTabStore((s) => s.activeTabId)
   const loadTabs = useTabStore((s) => s.loadTabs)
 
+  const [tabTotalSeconds, setTabTotalSeconds] = useState<number>(0)
+
+  // Check-in functionality
+  const {
+    isCheckInPending,
+    awaySeconds,
+    formattedAwayTime,
+    resumeTimer,
+    skipCheckIn,
+  } = useCheckIn()
+
   useEffect(() => {
     if (!authLoading) {
       loadProjects()
@@ -44,10 +58,35 @@ const MainLayout = memo(function MainLayout() {
     }
   }, [loadProjects, loadTabs, authLoading])
 
+  // Load tab total time when active tab changes
+  useEffect(() => {
+    if (activeTabId && isAdmin) {
+      fetchTabTotalTime(activeTabId)
+        .then((data) => setTabTotalSeconds(data.totalSeconds))
+        .catch(() => setTabTotalSeconds(0))
+    } else {
+      setTabTotalSeconds(0)
+    }
+  }, [activeTabId, isAdmin])
+
   const active = activeProjectsSorted(projects, activeTabId)
   const archived = archivedProjectsSorted(projects, activeTabId)
 
   const activeTabName = tabs.find((t) => t.id === activeTabId)?.name ?? 'Project'
+
+  // Format tab total time
+  const formattedTabTotal = useMemo(() => {
+    if (tabTotalSeconds === 0) return null
+    const hours = Math.floor(tabTotalSeconds / 3600)
+    const minutes = Math.floor((tabTotalSeconds % 3600) / 60)
+    const seconds = tabTotalSeconds % 60
+    if (hours > 0) {
+      return `⏱ Total investment: ${hours}h ${minutes}m ${seconds}s`
+    } else if (minutes > 0) {
+      return `⏱ Total investment: ${minutes}m ${seconds}s`
+    }
+    return `⏱ Total investment: ${seconds}s`
+  }, [tabTotalSeconds])
 
   const handleAddProject = useCallback(() => {
     addProject({
@@ -65,7 +104,12 @@ const MainLayout = memo(function MainLayout() {
       <TabBar isAdmin={isAdmin} />
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight neon-title">{activeTabName} Project Stack</h1>
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold tracking-tight neon-title">{activeTabName} Project Stack</h1>
+          {formattedTabTotal && (
+            <span className="text-xs text-gray-400 font-mono mt-1">{formattedTabTotal}</span>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           {authLoading ? (
             <span className="text-xs text-gray-500">Loading…</span>
@@ -118,6 +162,15 @@ const MainLayout = memo(function MainLayout() {
 
       <ProjectStack projects={active} isAdmin={isAdmin} onReorder={reorderProjects} />
       <ArchivedRow projects={archived} isAdmin={isAdmin} />
+
+      {/* Check-in modal */}
+      <CheckInModal
+        isOpen={isCheckInPending}
+        awaySeconds={awaySeconds}
+        formattedAwayTime={formattedAwayTime}
+        onResume={resumeTimer}
+        onSkip={skipCheckIn}
+      />
     </div>
   )
 })

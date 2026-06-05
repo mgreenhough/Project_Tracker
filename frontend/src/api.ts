@@ -218,3 +218,72 @@ export async function refreshAccessToken(refreshToken: string) {
   if (!res.ok) throw await parseErrorBody(res, 'Refresh failed')
   return parseJsonBody(res)
 }
+
+// Timers
+export async function fetchTimers(stepId: string): Promise<{ timers: any[] }> {
+  const res = await fetchWithAuth(`/timers?stepId=${encodeURIComponent(stepId)}`)
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to fetch timers')
+  return (await parseJsonBody(res)) as { timers: any[] }
+}
+
+export async function createTimer(stepId: string, projectId: string, description: string = '') {
+  const res = await fetchWithAuth('/timers', {
+    method: 'POST',
+    body: JSON.stringify({ stepId, projectId, description }),
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to create timer')
+  return parseJsonBody(res)
+}
+
+export async function updateTimer(id: string, updates: { description?: string }) {
+  const res = await fetchWithAuth(`/timers/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to update timer')
+  return parseJsonBody(res)
+}
+
+export async function deleteTimer(id: string) {
+  const res = await fetchWithAuth(`/timers/${id}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to delete timer')
+  return res.status === 204 ? null : parseJsonBody(res)
+}
+
+export async function startTimer(id: string) {
+  const res = await fetchWithAuth(`/timers/${id}/start`, {
+    method: 'POST',
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to start timer')
+  return parseJsonBody(res)
+}
+
+export async function stopTimer(id: string) {
+  const res = await fetchWithAuth(`/timers/${id}/stop`, {
+    method: 'POST',
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to stop timer')
+  return parseJsonBody(res)
+}
+
+export async function resetTimer(id: string) {
+  const res = await fetchWithAuth(`/timers/${id}/reset`, {
+    method: 'POST',
+  })
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to reset timer')
+  return parseJsonBody(res)
+}
+
+export async function fetchProjectTotalTime(projectId: string): Promise<{ totalSeconds: number }> {
+  const res = await fetchWithAuth(`/projects/${projectId}/total-time`)
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to fetch project total time')
+  return (await parseJsonBody(res)) as { totalSeconds: number }
+}
+
+export async function fetchTabTotalTime(tabId: string): Promise<{ totalSeconds: number }> {
+  const res = await fetchWithAuth(`/tabs/${tabId}/total-time`)
+  if (!res.ok) throw await parseErrorBody(res, 'Failed to fetch tab total time')
+  return (await parseJsonBody(res)) as { totalSeconds: number }
+}

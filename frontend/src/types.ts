@@ -33,3 +33,16 @@ export interface Project {
   updatedAt: string
   steps: Step[]
 }
+
+export interface Timer {
+  id: string
+  stepId: string
+  projectId: string
+  description: string
+  elapsedSeconds: number
+  isRunning: boolean
+  startedAt: string | null
+  checkInDisabled: boolean
+  createdAt: string
+  updatedAt: string
+}

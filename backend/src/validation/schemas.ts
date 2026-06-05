@@ -35,3 +35,14 @@ export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
+
+export const timerCreateSchema = z.object({
+  stepId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  description: z.string().max(200).optional(),
+});
+
+export const timerUpdateSchema = z.object({
+  description: z.string().max(200).optional(),
+  checkInDisabled: z.boolean().optional(),
+});

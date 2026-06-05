@@ -7,6 +7,7 @@ import projectRoutes from './routes/projects.js';
 import stepRoutes from './routes/steps.js';
 import authRoutes from './routes/auth.js';
 import tabRoutes from './routes/tabs.js';
+import timerRoutes from './routes/timers.js';
 import logRoutes from './routes/logs.js';
 import { initDb } from './db/database.js';
 import { initializeLogger, logError, getLoggerStatus } from './logger.js';
@@ -32,6 +33,7 @@ async function initServer(): Promise<void> {
   app.use('/api/projects', projectRoutes);
   app.use('/api/steps', stepRoutes);
   app.use('/api/tabs', tabRoutes);
+  app.use('/api/timers', timerRoutes);
   app.use('/api/logs', logRoutes);
 
   app.get('/api/health', (_req, res) => {

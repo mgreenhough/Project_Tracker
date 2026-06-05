@@ -55,6 +55,21 @@ export function initDb(overrideDb?: Database.Database): void {
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS timers (
+      id TEXT PRIMARY KEY,
+      step_id TEXT NOT NULL,
+      project_id TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      elapsed_seconds INTEGER NOT NULL DEFAULT 0,
+      is_running INTEGER NOT NULL DEFAULT 0,
+      started_at TEXT,
+      check_in_disabled INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (step_id) REFERENCES steps(id) ON DELETE CASCADE,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
   `);
 
   // Migration: add tab_id column to existing projects table (pre-schema v2)
@@ -72,6 +87,9 @@ export function initDb(overrideDb?: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_steps_project ON steps(project_id);
     CREATE INDEX IF NOT EXISTS idx_steps_order ON steps(step_order);
     CREATE INDEX IF NOT EXISTS idx_tabs_sort ON tabs(sort_order);
+    CREATE INDEX IF NOT EXISTS idx_timers_step ON timers(step_id);
+    CREATE INDEX IF NOT EXISTS idx_timers_project ON timers(project_id);
+    CREATE INDEX IF NOT EXISTS idx_timers_running ON timers(is_running) WHERE is_running = 1;
   `);
 
   // Migration: create default "General" tab and assign orphaned projects to it

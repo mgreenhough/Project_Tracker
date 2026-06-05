@@ -282,4 +282,31 @@ router.delete('/:projectId/steps/:stepId', requireAuth, (req: AuthRequest, res) 
   res.status(204).send();
 });
 
+// GET /projects/:id/total-time — returns total elapsed time for all timers in a project
+router.get('/:id/total-time', requireAuth, (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const project = db.prepare(`SELECT * FROM projects WHERE id = ?`).get(id);
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' });
+    return;
+  }
+
+  // Get all timers for this project
+  const timers = db.prepare(`SELECT * FROM timers WHERE project_id = ?`).all(id) as any[];
+
+  let totalSeconds = 0;
+
+  for (const timer of timers) {
+    totalSeconds += timer.elapsed_seconds;
+    if (timer.is_running === 1 && timer.started_at) {
+      const startedAt = new Date(timer.started_at).getTime();
+      const nowTime = new Date().getTime();
+      totalSeconds += Math.floor((nowTime - startedAt) / 1000);
+    }
+  }
+
+  res.json({ totalSeconds });
+});
+
 export default router;

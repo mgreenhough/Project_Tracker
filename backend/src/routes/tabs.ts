@@ -128,4 +128,44 @@ router.delete('/:id', requireAuth, (req: AuthRequest, res) => {
   res.status(204).send();
 });
 
+// GET /tabs/:id/total-time — returns total elapsed time for all timers in all projects in a tab
+router.get('/:id/total-time', requireAuth, (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const tab = db.prepare(`SELECT * FROM tabs WHERE id = ?`).get(id);
+  if (!tab) {
+    res.status(404).json({ error: 'Tab not found' });
+    return;
+  }
+
+  // Get all projects in this tab
+  const projects = db.prepare(`SELECT id FROM projects WHERE tab_id = ? AND is_deleted = 0`).all(id) as any[];
+
+  if (projects.length === 0) {
+    res.json({ totalSeconds: 0 });
+    return;
+  }
+
+  const projectIds = projects.map((p) => p.id);
+
+  // Get all timers for these projects
+  const placeholders = projectIds.map(() => '?').join(',');
+  const timers = db
+    .prepare(`SELECT * FROM timers WHERE project_id IN (${placeholders})`)
+    .all(...projectIds) as any[];
+
+  let totalSeconds = 0;
+
+  for (const timer of timers) {
+    totalSeconds += timer.elapsed_seconds;
+    if (timer.is_running === 1 && timer.started_at) {
+      const startedAt = new Date(timer.started_at).getTime();
+      const nowTime = new Date().getTime();
+      totalSeconds += Math.floor((nowTime - startedAt) / 1000);
+    }
+  }
+
+  res.json({ totalSeconds });
+});
+
 export default router;

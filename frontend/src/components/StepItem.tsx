@@ -2,8 +2,10 @@ import { memo, useState, useRef, useEffect, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectStore } from '../store/useProjectStore'
+import { useTimerStore } from '../store/useTimerStore'
 import { DueDateBadge } from './DueDateBadge'
 import { DatePicker } from './DatePicker'
+import { TimerList } from './TimerList'
 import type { Step } from '../types'
 
 interface StepItemProps {
@@ -40,6 +42,8 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
   const deleteStep = useProjectStore((s) => s.deleteStep)
+  const timers = useTimerStore((s) => s.timers.get(step.id) || [])
+  const runningTimerId = useTimerStore((s) => s.runningTimerId)
   const config = statusConfig[step.status]
 
   const [editingContent, setEditingContent] = useState(false)
@@ -49,6 +53,8 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
 
   const [editingDate, setEditingDate] = useState(false)
   const [dateValue, setDateValue] = useState(step.dueDate || '')
+
+  const [showTimers, setShowTimers] = useState(false)
 
   useEffect(() => {
     setContentValue(step.content)
@@ -168,6 +174,18 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     deleteStep(step.projectId, step.id)
   }, [isProjectFront, onBringToFront, deleteStep, step.projectId, step.id])
 
+  const handleClockClick = useCallback(() => {
+    if (!isProjectFront && onBringToFront) {
+      onBringToFront()
+      return
+    }
+    setShowTimers((prev) => !prev)
+  }, [isProjectFront, onBringToFront])
+
+  // Check if this step has any timers
+  const hasTimers = timers.length > 0
+  const hasRunningTimer = timers.some((t) => t.isRunning) || timers.some((t) => t.id === runningTimerId)
+
   const {
     attributes,
     listeners,
@@ -184,81 +202,108 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-2 text-sm group animate-fade-in"
-    >
-      {isAdmin && (
-        <button
-          type="button"
-          className="cursor-grab active:cursor-grabbing text-gray-600 active:text-gray-400 text-xs select-none w-8 h-10 flex items-center justify-center rounded active:bg-white/5 transition-colors touch-manipulation"
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder step"
-        >
-          ≡
-        </button>
-      )}
-      <button
-        className="w-10 h-10 flex items-center justify-center text-lg select-none rounded active:bg-white/5 transition-colors shrink-0"
-        onClick={handleStatusClick}
-        disabled={!isAdmin}
-        title={config.label}
-        aria-label={`Step status: ${config.label}`}
+    <div className="flex flex-col">
+      {/* Main step row */}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center gap-2 text-sm group animate-fade-in"
       >
-        <span className={config.className}>{config.icon}</span>
-      </button>
-
-      {editingContent && isAdmin ? (
-        <input
-          ref={contentInputRef}
-          type="text"
-          autoCapitalize="sentences"
-          value={contentValue}
-          onChange={handleContentInputChange}
-          onBlur={handleContentConfirm}
-          onKeyDown={handleContentKeyDown}
-          className="flex-1 bg-transparent border-b border-neon-blue text-gray-200 outline-none min-w-0"
-        />
-      ) : (
-        <span
-          className={`flex-1 break-words cursor-pointer ${
-            step.status === 'COMPLETE' ? 'line-through opacity-40' : step.status === 'DECISION_POINT' ? 'text-neon-red' : 'text-gray-200'
-          } ${isAdmin ? 'active:text-neon-blue' : ''}`}
-          onClick={handleContentSpanClick}
+        {isAdmin && (
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing text-gray-600 active:text-gray-400 text-xs select-none w-8 h-10 flex items-center justify-center rounded active:bg-white/5 transition-colors touch-manipulation"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder step"
+          >
+            ≡
+          </button>
+        )}
+        <button
+          className="w-10 h-10 flex items-center justify-center text-lg select-none rounded active:bg-white/5 transition-colors shrink-0"
+          onClick={handleStatusClick}
+          disabled={!isAdmin}
+          title={config.label}
+          aria-label={`Step status: ${config.label}`}
         >
-          {step.content}
-        </span>
-      )}
+          <span className={config.className}>{config.icon}</span>
+        </button>
 
-      {editingDate && isAdmin ? (
-        <DatePicker
-          value={dateValue}
-          onChange={setDateValue}
-          onConfirm={handleDateConfirm}
-          onCancel={handleDateCancel}
-        />
-      ) : (
-        <span
-          className={`cursor-pointer ${isAdmin ? 'active:text-neon-blue' : ''}`}
-          onClick={handleDateSpanClick}
-        >
-          <DueDateBadge dueDate={step.dueDate} label="" />
-        </span>
-      )}
+        {editingContent && isAdmin ? (
+          <input
+            ref={contentInputRef}
+            type="text"
+            autoCapitalize="sentences"
+            value={contentValue}
+            onChange={handleContentInputChange}
+            onBlur={handleContentConfirm}
+            onKeyDown={handleContentKeyDown}
+            className="flex-1 bg-transparent border-b border-neon-blue text-gray-200 outline-none min-w-0"
+          />
+        ) : (
+          <span
+            className={`flex-1 break-words cursor-pointer ${
+              step.status === 'COMPLETE' ? 'line-through opacity-40' : step.status === 'DECISION_POINT' ? 'text-neon-red' : 'text-gray-200'
+            } ${isAdmin ? 'active:text-neon-blue' : ''}`}
+            onClick={handleContentSpanClick}
+          >
+            {step.content}
+          </span>
+        )}
 
-      {isAdmin && (
+        {editingDate && isAdmin ? (
+          <DatePicker
+            value={dateValue}
+            onChange={setDateValue}
+            onConfirm={handleDateConfirm}
+            onCancel={handleDateCancel}
+          />
+        ) : (
+          <span
+            className={`cursor-pointer ${isAdmin ? 'active:text-neon-blue' : ''}`}
+            onClick={handleDateSpanClick}
+          >
+            <DueDateBadge dueDate={step.dueDate} label="" />
+          </span>
+        )}
+
+        {/* Clock icon for timers */}
         <button
           type="button"
-          onClick={handleDeleteClick}
-          className="transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active text-gray-600 active:text-neon-red"
-          title="Delete step"
-          aria-label="Delete step"
+          onClick={handleClockClick}
+          className={`w-8 h-8 flex items-center justify-center rounded active:bg-white/5 transition-colors relative ${
+            showTimers ? 'text-neon-blue' : hasRunningTimer ? 'text-neon-green animate-pulse' : hasTimers ? 'text-gray-400' : 'text-gray-600'
+          } hover:text-neon-blue`}
+          title={showTimers ? 'Hide timers' : 'Show timers'}
         >
-          ×
+          ⏱
+          {/* Dot indicator if step has timers but none running */}
+          {hasTimers && !hasRunningTimer && !showTimers && (
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-gray-500 rounded-full" />
+          )}
         </button>
-      )}
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            className="transition-colors w-8 h-8 flex items-center justify-center rounded active:bg-white/5 tap-active text-gray-600 active:text-neon-red"
+            title="Delete step"
+            aria-label="Delete step"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Timer list - shown below the step when expanded */}
+      <TimerList
+        stepId={step.id}
+        projectId={step.projectId}
+        isAdmin={isAdmin}
+        isExpanded={showTimers}
+      />
     </div>
   )
 })

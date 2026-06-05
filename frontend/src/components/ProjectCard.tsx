@@ -20,6 +20,7 @@ import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
 import { StepItem } from './StepItem'
 import { DueDateBadge } from './DueDateBadge'
 import { useProjectStore } from '../store/useProjectStore'
+import { useTimerStore } from '../store/useTimerStore'
 import { urgencyLevel, urgencyBorderColor, urgencyBgColor } from '../store/selectors'
 import type { Project } from '../types'
 
@@ -56,6 +57,14 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
   const deleteProject = useProjectStore((s) => s.deleteProject)
   const steps = useMemo(() => [...project.steps].sort((a, b) => a.stepOrder - b.stepOrder), [project.steps])
 
+  const projectTotal = useTimerStore((s) => s.projectTotals.get(project.id) || 0)
+  const loadProjectTotal = useTimerStore((s) => s.loadProjectTotal)
+
+  // Load project total when component mounts
+  useEffect(() => {
+    loadProjectTotal(project.id)
+  }, [project.id, loadProjectTotal])
+
   const projectUrgency = useMemo(() => urgencyLevel(project.dueDate), [project.dueDate])
   const stepUrgencies = useMemo(
     () => steps
@@ -70,6 +79,17 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
     if (all.includes('low')) return 'low'
     return null
   }, [projectUrgency, stepUrgencies])
+
+  // Format project total time
+  const formattedProjectTotal = useMemo(() => {
+    if (projectTotal === 0) return null
+    const hours = Math.floor(projectTotal / 3600)
+    const minutes = Math.floor((projectTotal % 3600) / 60)
+    if (hours > 0) {
+      return `⏱ ${hours}h ${minutes}m`
+    }
+    return `⏱ ${minutes}m`
+  }, [projectTotal])
 
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(project.title)
@@ -273,6 +293,12 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
           >
             {project.title}
           </h3>
+        )}
+        {/* Project total time display */}
+        {formattedProjectTotal && (
+          <span className="text-xs text-neon-blue font-mono whitespace-nowrap" title="Total time tracked">
+            {formattedProjectTotal}
+          </span>
         )}
       </div>
 
