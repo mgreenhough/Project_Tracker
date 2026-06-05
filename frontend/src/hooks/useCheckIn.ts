@@ -69,9 +69,14 @@ export function useCheckIn() {
   const startCheckInTimer = useCallback(() => {
     if (!preferences.enabled || !runningTimerRef.current) return
 
-    // Clear any existing timeout
+    // Clear any existing timeout and interval
     if (checkInTimeoutRef.current) {
       clearTimeout(checkInTimeoutRef.current)
+      checkInTimeoutRef.current = null
+    }
+    if (awayIntervalRef.current) {
+      clearInterval(awayIntervalRef.current)
+      awayIntervalRef.current = null
     }
 
     const intervalMs = preferences.intervalMinutes * 60 * 1000

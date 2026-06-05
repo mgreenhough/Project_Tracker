@@ -361,6 +361,6 @@ Committed 1419: 1104687
 
 1025. [x] date picker upgrade, on mobile, when at 100% zoom, part of the calendar is off screen and you can access it. Fixed: Calendar now uses fixed positioning with dynamic positioning calculation. It detects viewport boundaries and repositions (left/right, above/below input) to stay fully visible on screen. Also reduced cell sizes for mobile and added max-width/height constraints.
 
-Committed 1442: af9b59a
+Committed 1442: 6a544fc
 
 ## MAJOR TIMER UPGRADE 05/06/26 eaecf3b
