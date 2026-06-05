@@ -13,18 +13,26 @@ const INTERVAL_OPTIONS = [
 export const CheckInSettings = memo(function CheckInSettings() {
   const { preferences, savePreferences } = useCheckIn()
   const [isOpen, setIsOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const handleToggle = useCallback(() => {
     setIsOpen((prev) => !prev)
@@ -42,8 +50,9 @@ export const CheckInSettings = memo(function CheckInSettings() {
   const currentLabel = INTERVAL_OPTIONS.find((opt) => opt.value === preferences.intervalMinutes)?.label || `${preferences.intervalMinutes} min`
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       <button
+        ref={buttonRef}
         onClick={handleToggle}
         className="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors tap-active flex items-center gap-2"
         title="Check-in Settings"
@@ -53,7 +62,15 @@ export const CheckInSettings = memo(function CheckInSettings() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 animate-fade-in">
+        <div
+          ref={dropdownRef}
+          className="fixed bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-[9999] animate-fade-in"
+          style={{
+            top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 : 0,
+            right: buttonRef.current ? window.innerWidth - buttonRef.current.getBoundingClientRect().right : 0,
+            width: '224px',
+          }}
+        >
           <div className="p-4">
             <h3 className="text-sm font-semibold text-white mb-3">Check-in Settings</h3>
 
@@ -104,6 +121,6 @@ export const CheckInSettings = memo(function CheckInSettings() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 })

@@ -364,3 +364,11 @@ Committed 1419: 1104687
 Committed 1442: 
 
 ## MAJOR TIMER UPGRADE 05/06/26 aabb488
+
+1026. [x] if there is only one timer in timer list, deleting it takes two clicks. first click doesnt delete it.
+
+    Root cause: The useEffect in TimerList was triggering `loadTimers` whenever `timers` became empty (after deletion), which would refetch from server and restore the deleted timer. The dependency array included `timers` which caused the effect to re-run after state updates.
+
+    Solution: Added `hasLoadedRef` to track which steps have already loaded timers. The effect now only loads timers once per step when first expanded, preventing the re-fetch after deletion.
+
+1027. Added configurable checkin timer settings

@@ -1,4 +1,4 @@
-import { memo, useEffect, useCallback } from 'react'
+import { memo, useEffect, useCallback, useRef } from 'react'
 import { useTimerStore } from '../store/useTimerStore'
 import { TimerItem } from './TimerItem'
 import type { Timer } from '../types'
@@ -16,13 +16,17 @@ export const TimerList = memo(function TimerList({ stepId, projectId, isAdmin, i
   const isLoading = useTimerStore((s) => s.isLoading)
   const loadTimers = useTimerStore((s) => s.loadTimers)
   const addTimer = useTimerStore((s) => s.addTimer)
+  
+  // Track if we've already loaded timers for this step to prevent re-loading after delete
+  const hasLoadedRef = useRef<Set<string>>(new Set())
 
   // Load timers when expanded for the first time
   useEffect(() => {
-    if (isExpanded && (!timers || timers.length === 0) && !isLoading) {
+    if (isExpanded && !hasLoadedRef.current.has(stepId) && !isLoading) {
+      hasLoadedRef.current.add(stepId)
       loadTimers(stepId)
     }
-  }, [isExpanded, stepId, timers, isLoading, loadTimers])
+  }, [isExpanded, stepId, isLoading, loadTimers])
 
   const handleAddTimer = useCallback(() => {
     addTimer(stepId, projectId)
