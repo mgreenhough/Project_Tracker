@@ -95,6 +95,7 @@ jobs:
             cd /opt/project-tracker
             echo "Pulling latest code..."
             git reset --hard HEAD
+            git clean -fd
             git pull origin main
             cd backend
             echo "Installing dependencies..."
