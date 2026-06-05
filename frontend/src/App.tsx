@@ -45,7 +45,6 @@ const MainLayout = memo(function MainLayout() {
   // Check-in functionality
   const {
     isCheckInPending,
-    awaySeconds,
     formattedAwayTime,
     resumeTimer,
     skipCheckIn,
