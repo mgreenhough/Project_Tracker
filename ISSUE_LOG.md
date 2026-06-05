@@ -348,3 +348,7 @@ Committed 02/06/26 1155 fix (race condition of 1019): f0d8ff5
 1021. [x] date picker upgrade - date not saving. Fixed: Modified `onConfirm` callback to accept optional `confirmedValue` parameter so the date value is passed directly instead of relying on async state updates.
 
 1022. [x] date picker upgrade - requires two clicks to begin edit, should be one. first opend date edit, second opens calender drop dow. drop down should be activated on first click. Fixed: Added `autoFocus` attribute to the date input field so the calendar dropdown opens immediately when the DatePicker component mounts.
+
+Committed 05/06/26 1413: 8606258
+
+1021.1 [x] date flashes breifly but doesnt persist. Fixed: Added `justSelectedRef` to prevent double `onConfirm` calls. When a date is selected from the calendar, the click outside handler was also triggering and calling `onConfirm` again with stale state, causing the date to flash then revert. The ref now blocks the duplicate confirm call.

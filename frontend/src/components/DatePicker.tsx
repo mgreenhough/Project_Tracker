@@ -14,6 +14,7 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder = 'dd/mm/yy' }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const justSelectedRef = useRef(false)
   
   // Parse dd/mm/yy to Date
   const parseDate = (dateStr: string): Date | undefined => {
@@ -39,6 +40,12 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        // Don't confirm if we just selected a date (prevents double confirm)
+        if (justSelectedRef.current) {
+          justSelectedRef.current = false
+          setIsOpen(false)
+          return
+        }
         setIsOpen(false)
         onConfirm(value)
       }
@@ -56,6 +63,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   const handleSelect = (date: Date | undefined) => {
     if (date) {
       const formattedDate = formatDate(date)
+      justSelectedRef.current = true
       onChange(formattedDate)
       setIsOpen(false)
       onConfirm(formattedDate)
@@ -71,6 +79,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     if (regex.test(newValue)) {
       const parsed = parseDate(newValue)
       if (parsed) {
+        justSelectedRef.current = true
         onConfirm(newValue)
       }
     }
@@ -90,6 +99,12 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     // Delay to allow calendar clicks to register
     setTimeout(() => {
       if (!containerRef.current?.contains(document.activeElement)) {
+        // Don't confirm if we just selected/confirmed a date (prevents double confirm)
+        if (justSelectedRef.current) {
+          justSelectedRef.current = false
+          setIsOpen(false)
+          return
+        }
         setIsOpen(false)
         onConfirm(value)
       }
