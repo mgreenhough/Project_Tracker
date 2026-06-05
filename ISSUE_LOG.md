@@ -313,17 +313,23 @@ Committed 2306: 5ecdf8d
 
 1019. [x] task drag reorder seems to only persist on second try. first fails.
     
-    Root cause: `reorderSteps` was using fire-and-forget async IIFEs inside `orderedIds.forEach()`, meaning:
-    1. API calls were not awaited - could fail silently or race with other operations
-    2. No Promise.all meant the function returned immediately without confirming saves
-    3. Missing step existence check could cause "step not found" errors if IDs changed
+    Root cause: Race condition between dnd-kit drag event IDs and Zustand state updates.
+    When a new step was created, it started with a client UUID. If the server responded
+    and updated the store to a server UUID BEFORE the user finished dragging, dnd-kit's
+    `active.id` was still the stale client UUID. `handleDragEnd` then called
+    `steps.findIndex((s) => s.id === clientId)` which returned `-1` (steps now had server
+    IDs). `arrayMove(steps, -1, -1)` then produced an essentially unchanged array,
+    making the drag appear to not persist.
     
-    Solution: Refactored `reorderSteps` to be `async` and use `Promise.all()` to await all API calls:
-    - Changed return type from `void` to `Promise<void>`
-    - Wrapped `orderedIds.map()` in `Promise.all()` to ensure all updates complete
-    - Added step existence check before API call to skip stale IDs
-    
-    Note: The drag handler in ProjectCard.tsx (`handleDragEnd`) already awaits `reorderSteps` properly, so this change ensures the drag operation waits for server confirmation.
+    Solution: Added `_stepIdMap: Map<string, string>` to the store to track client ID
+    → server ID mappings. When a step is successfully created on the server, the mapping
+    is stored. `reorderSteps` now resolves any stale client IDs in `orderedIds` to their
+    server IDs before processing:
+    ```typescript
+    const resolvedIds = orderedIds.map((id) => stepIdMap.get(id) ?? id)
+    ```
+    This ensures the drag always uses the correct step IDs for both state updates and
+    API calls, even if the ID changed mid-drag.
 
 1020. [x] part of existing problem that was fixed (you need to click a card to bring it to the front before you can edit it) the front card is already at the fron and should have instants edits when clicked (add/delete step, edit task ect)
 
@@ -335,4 +341,5 @@ Committed 2306: 5ecdf8d
     ```
     This ensures the leftmost (naturally front) card has instant edit access without requiring a click.
 
-Committed 
+Committed 02/06/26 1019: 8c2281e 
+Committed 02/06/26 1155 fix (race condition of 1019): f0d8ff5

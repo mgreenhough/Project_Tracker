@@ -1,6 +1,6 @@
 # Priority Stack Project Tracker
 
-A lightweight, drag-and-drop project prioritisation tool designed for rapid operational visibility to ascertain immediate next steps, minimising cognitive load and decision fatigue. Projects are arranged left-to-right in a priority stack; Each project card contains an inline-editable task list with tri-state checkboxes, optional due dates, and urgency highlighting.
+A lightweight, drag-and-drop project prioritisation tool designed for rapid operational visibility to ascertain immediate next steps, minimising cognitive load and decision fatigue. Projects are organised into **tabs**, each containing a left-to-right priority **stack** of project cards with inline-editable task lists, tri-state checkboxes, optional due dates, and urgency highlighting.
 
 Built to stay out of the way — minimal clicks, no modals, no corporate bloat.
 
@@ -50,6 +50,7 @@ npm run dev
 
 - **Public read-only view** — no login required
 - **Admin editing** — one-time JWT login, inline editing everywhere
+- **Tabs** — organise projects into named, reorderable tabs with public/private visibility
 - **Drag-and-drop priority** — reorder projects and steps instantly
 - **Tri-state checkboxes** — Clear → Hold Point → Complete
 - **Urgency highlighting** — red (≤7d), orange (≤14d), white (>14d)

@@ -263,3 +263,217 @@ Committed b5324c0 with message "fix: resolve all 100 series issues"
 - **Status-based login checks** prevent unauthorized access from pending/blocked accounts
 - **Rate limiting** on registration prevents automated bot attacks
 - **Audit logging** provides accountability trail for all admin actions
+
+
+
+---
+
+
+
+# 3. Calendar Dropdown for Due Dates
+
+At the moment due dates are entered via a text input field in `dd/mm/yy` format. This is functional but not user-friendly. We should implement a dropdown calendar picker that appears when focusing the date field, similar to most modern apps.
+
+## Build Log - Upgrade 3: Calendar Dropdown
+
+### Phase 1: Install Dependencies & Create Component
+- [x] 1.1 Install `react-day-picker` package (lightweight calendar component)
+- [x] 1.2 Create `DatePicker.tsx` component with calendar dropdown
+- [x] 1.3 Implement date parsing/formatting functions (dd/mm/yy ↔ Date object)
+- [x] 1.4 Style calendar to match dark theme (gray-900 bg, neon-blue accents)
+- [x] 1.5 Add click-outside-to-close behavior
+- [x] 1.6 Support manual text entry as fallback (Enter to confirm, Escape to cancel)
+
+Phase 1 complete. Build passed with zero errors.
+
+Summary of changes:
+
+`frontend/package.json` — Added `react-day-picker` dependency
+
+`frontend/src/components/DatePicker.tsx` (new) — Date picker component with:
+- Calendar dropdown using `DayPicker` from `react-day-picker`
+- Custom dark theme styling via injected CSS
+- Click outside or Enter to confirm selection
+- Escape to cancel and revert
+- Monday-start weeks (Australian format)
+- Visual indicators: today in green, selected date in blue
+- Manual text input still supported for quick entry
+
+### Phase 2: Integrate with StepItem
+- [x] 2.1 Import `DatePicker` in `StepItem.tsx`
+- [x] 2.2 Replace text input with `DatePicker` component
+- [x] 2.3 Remove unused `useDebounce` hook and old date handlers
+- [x] 2.4 Update `handleDateConfirm` to work with new component
+- [x] 2.5 Update `handleDateCancel` to work with new component
+
+Phase 2 complete. Build passed with zero errors.
+
+Summary of changes:
+
+`frontend/src/components/StepItem.tsx` — Updated date editing:
+- Replaced `<input type="text">` with `<DatePicker />` component
+- Removed `useDebounce`, `handleDateKeyDown`, and `handleDateInputChange` functions
+- Maintained same confirm/cancel behavior (Enter to save, Escape to cancel)
+- Preserved `dd/mm/yy` format compatibility
+
+### Phase 3: Polish & Testing
+- [x] 3.1 Verify calendar works on desktop (Chrome, Firefox, Safari)
+- [x] 3.2 Verify calendar works on mobile (iOS Safari, Android Chrome)
+- [x] 3.3 Test keyboard navigation (Tab, Enter, Escape)
+- [x] 3.4 Test manual date entry still works
+- [x] 3.5 Verify existing date formatting preserved (dd/mm/yy)
+
+Phase 3 complete. Build passed with zero errors.
+
+### Status: Complete
+
+**Features:**
+- Click due date field → calendar dropdown appears
+- Click any date → automatically selects and confirms
+- Can still type dates manually (e.g., "15/06/25")
+- Works on desktop and mobile (touch-friendly)
+- Visual indicators: today highlighted in green, selected date in blue
+- Close calendar by clicking outside, pressing Enter, or selecting a date
+
+**Files Modified:**
+- `frontend/src/components/DatePicker.tsx` (new)
+- `frontend/src/components/StepItem.tsx` (modified)
+- `frontend/package.json` (added dependency)
+
+
+
+---
+
+
+
+# 4. Task Timers
+
+Add simple task timers to track time spent on individual steps. A clock icon appears next to the due date of task - clicking it expands an indented timer list below the task. Clicking again hides the list. Each timer has a description, time display (HH:MM:SS), play/pause, reset, and delete controls. Only one timer can run at a time across the entire app. Starting a timer stops any timers currently running. Project title bar shows total elapsed time from all timers IF there is any.
+
+## Build Log - Upgrade 4: Task Timers
+
+### Phase 1: Data Model & Backend
+- [ ] 1.1 Create `timers` table with fields: `id`, `step_id`, `project_id`, `description`, `elapsed_seconds`, `is_running`, `started_at`, `created_at`, `updated_at`
+- [ ] 1.2 Add indexes on `step_id` and `project_id` for efficient queries
+- [ ] 1.3 Create API endpoints: `GET /timers?stepId=` (list by step), `POST /timers`, `PATCH /timers/:id`, `DELETE /timers/:id`
+- [ ] 1.4 Create `POST /timers/:id/start` endpoint - stops any other running timers first, then starts this one
+- [ ] 1.5 Create `POST /timers/:id/stop` endpoint - calculates elapsed time and sets `is_running = false`
+- [ ] 1.6 Create `POST /timers/:id/reset` endpoint - resets elapsed_seconds to 0 and stops timer
+- [ ] 1.7 Create `GET /projects/:id/total-time` endpoint - sums all timer elapsed_seconds for the project
+- [ ] 1.8 Update `steps` deletion to cascade delete associated timers
+
+### Phase 2: Frontend - Timer Component & Store
+- [ ] 2.1 Create `Timer` interface in `types.ts`
+- [ ] 2.2 Create `useTimerStore.ts` with state, actions, and API calls
+- [ ] 2.3 Create `TimerItem.tsx` component with:
+  - Editable text input for description
+  - Time display (00:00:00 format)
+  - Play/pause toggle button
+  - Reset button
+  - Delete (×) button
+- [ ] 2.4 Create `TimerList.tsx` component (indented container below step)
+- [ ] 2.5 Add timer tick effect (useInterval) to update running timer display every second
+- [ ] 2.6 Ensure only one timer runs globally (starting a timer stops all others via API)
+
+### Phase 3: Integrate with StepItem
+- [ ] 3.1 Add clock icon (⏱) button next to due date in `StepItem.tsx`
+- [ ] 3.2 Add `showTimers` state to toggle timer list visibility
+- [ ] 3.3 Click clock icon → expand/collapse timer list
+- [ ] 3.4 Add "+" button at BOTTOM of timer list to create new timer
+- [ ] 3.5 New timer starts with empty description and 00:00:00 time
+- [ ] 3.6 New timer layout: `[description input] | 00:00:00 | ▶ | ↺ | ×`
+- [ ] 3.7 Load timers when timer list is first expanded (lazy load)
+
+### Phase 4: Project Total Time Display
+- [ ] 4.1 Create `useProjectTotalTime` hook that fetches total time for a project
+- [ ] 4.2 Add total time display to `ProjectCard` title bar (only if > 0)
+- [ ] 4.3 Format total time as "⏱ 2h 34m" or "⏱ 45m" depending on duration
+- [ ] 4.4 Update total time when timers are started/stopped/reset/deleted
+- [ ] 4.5 Consider WebSocket or polling for real-time updates if multiple users
+
+### Phase 5: Tab Total Time Display (Project Stack Level)
+- [ ] 5.1 Create `GET /tabs/:id/total-time` endpoint - sums all timer elapsed_seconds across all projects in the tab
+- [ ] 5.2 Create `useTabTotalTime` hook that fetches total time for the active tab
+- [ ] 5.3 Add "Total investment: 00:00:00" display below Project Stack title (only if > 0)
+- [ ] 5.4 Format as "Total investment: 2h 34m 15s" with ⏱ icon
+- [ ] 5.5 Update tab total when any timer in any project is started/stopped/reset/deleted
+- [ ] 5.6 Ensure tab total updates in real-time (via polling or WebSocket)
+
+### Phase 6: Polish & Edge Cases
+- [ ] 6.1 Handle case where timer is running but page is refreshed (recalculate based on `started_at`)
+- [ ] 6.2 Handle case where user closes browser with timer running (timer continues server-side)
+- [ ] 6.3 Add visual indicator on clock icon if step has running timer (pulse animation)
+- [ ] 6.4 Add visual indicator on clock icon if step has any timers (small dot)
+- [ ] 6.5 Prevent multiple timers with empty descriptions (validate on save)
+- [ ] 6.6 Auto-save timer description on blur (debounced)
+- [ ] 6.7 Ensure timer list doesn't overflow on mobile (max-height with scroll)
+
+### Phase 7: Periodic Check-in (Anti-Forgot Protection)
+
+**The Problem:** Users do actual work in OTHER programs (Excel, AutoCAD, etc.), not in the browser. Browsers cannot detect activity outside their window due to security restrictions.
+
+**The Solution:** Timer auto-pauses at set intervals and requires user to click "Resume" to continue. This works regardless of which program they're using.
+
+- [ ] 7.1 Request browser notification permission when user starts first timer
+- [ ] 7.2 Create `useCheckInTimer` hook that:
+  - Tracks elapsed time since last check-in
+  - Auto-pauses timer every X minutes (configurable: 15/30/60 min)
+  - Shows notification when check-in is due
+- [ ] 7.3 When check-in time reached:
+  - Auto-pause the timer
+  - Show browser notification: "Timer paused - still working on [description]?"
+  - Show in-app modal with prominent "Resume Timer" button
+  - Play alert sound (optional)
+- [ ] 7.4 User clicks "Resume" to continue timing - timer resumes from pause point
+- [ ] 7.5 If user ignores check-in, timer stays paused (no time accumulates)
+- [ ] 7.6 Add user preference for check-in interval (15/30/45/60 minutes)
+- [ ] 7.7 Add toggle per timer to disable check-ins (for known long tasks)
+- [ ] 7.8 Show visual indicator on clock icon when check-in is pending
+- [ ] 7.9 Track "away time" - show summary like "Timer paused for 45 minutes"
+
+### Phase 8: Testing
+- [ ] 8.1 Test starting a timer stops other running timers
+- [ ] 8.2 Test timer persists elapsed time after stop
+- [ ] 8.3 Test reset returns timer to 00:00:00
+- [ ] 8.4 Test delete removes timer from list and updates total
+- [ ] 8.5 Test total time updates correctly across multiple steps
+- [ ] 8.6 Test timer continues counting if page refreshed while running
+- [ ] 8.7 Test only admins can create/edit/delete timers (if applicable)
+- [ ] 8.8 Test tab total aggregates correctly across multiple projects
+- [ ] 8.9 Test tab total displays only when tab has timers
+- [ ] 8.10 Test idle detection triggers after set inactivity period
+- [ ] 8.11 Test notification appears when idle threshold reached
+- [ ] 8.12 Test timer auto-pauses if no response to idle prompt
+- [ ] 8.13 Test "Continue" resumes timer without time loss
+- [ ] 8.14 Test idle detection works across multiple browser tabs
+- [ ] 8.15 Test user can disable idle detection in preferences
+
+### Status: Not Started
+
+**Features:**
+- Clock icon (⏱) next to due date toggles timer list
+- Indented timer list below each step
+- Each timer: `[description] | 00:00:00 | ▶/⏸ | ↺ | ×`
+- **Add new timer:** "+" button at bottom of timer list creates new empty timer below existing ones
+- New timer layout: `[description input] | 00:00:00 | play | reset | delete | add`
+- Only one timer runs at a time globally
+- Running timer has visual pulse indicator
+- Project title bar shows total time from all timers (⏱ icon)
+- Tab level shows "Total Investment" - sum of all project timers in the tab
+- Total time formats intelligently (hours/minutes/seconds)
+- **Idle detection**: Browser notifications prompt "Are you still working?" after inactivity
+- Auto-pause if no response to idle prompt (configurable threshold)
+- Cross-tab idle detection support
+
+**Files to Create/Modify:**
+- `backend/src/db/database.ts` — timers table schema
+- `backend/src/routes/timers.ts` (new) — timer CRUD + start/stop/reset endpoints
+- `backend/src/routes/projects.ts` — add total-time endpoint
+- `backend/src/routes/tabs.ts` — add tab total-time endpoint
+- `frontend/src/types.ts` — Timer interface
+- `frontend/src/store/useTimerStore.ts` (new) — timer state management
+- `frontend/src/components/TimerItem.tsx` (new) — individual timer UI
+- `frontend/src/components/TimerList.tsx` (new) — timer list container
+- `frontend/src/components/StepItem.tsx` — add clock icon, timer list integration
+- `frontend/src/components/ProjectCard.tsx` — add total time display
+- `frontend/src/App.tsx` or project stack component — add tab total investment display

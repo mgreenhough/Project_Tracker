@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectStore } from '../store/useProjectStore'
 import { DueDateBadge } from './DueDateBadge'
+import { DatePicker } from './DatePicker'
 import type { Step } from '../types'
 
 interface StepItemProps {
@@ -35,17 +36,6 @@ const statusConfig = {
   },
 }
 
-function useDebounce<T extends (...args: never[]) => void>(fn: T, delay: number) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  return useCallback(
-    (...args: Parameters<T>) => {
-      if (timer.current) clearTimeout(timer.current)
-      timer.current = setTimeout(() => fn(...args), delay)
-    },
-    [fn, delay]
-  )
-}
-
 export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront = true, onBringToFront }: StepItemProps) {
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
@@ -59,10 +49,6 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
 
   const [editingDate, setEditingDate] = useState(false)
   const [dateValue, setDateValue] = useState(step.dueDate || '')
-
-  const debouncedUpdateDate = useDebounce((projectId: string, stepId: string, dueDate: string | null) => {
-    updateStep(projectId, stepId, { dueDate })
-  }, 800)
 
   useEffect(() => {
     setContentValue(step.content)
@@ -140,14 +126,6 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     setDateValue(step.dueDate || '')
   }, [step.dueDate])
 
-  const handleDateKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleDateConfirm()
-    } else if (e.key === 'Escape') {
-      handleDateCancel()
-    }
-  }, [handleDateConfirm, handleDateCancel])
-
   const handleStatusClick = useCallback(() => {
     if (!isAdmin) return
     if (!isProjectFront && onBringToFront) {
@@ -171,15 +149,6 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     }
     setEditingContent(true)
   }, [isAdmin, isProjectFront, onBringToFront])
-
-  const handleDateInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateValue(e.target.value)
-    const trimmed = e.target.value.trim()
-    const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
-    if (trimmed === '' || ddmmyy.test(trimmed)) {
-      debouncedUpdateDate(step.projectId, step.id, trimmed || null)
-    }
-  }, [step.projectId, step.id, debouncedUpdateDate])
 
   const handleDateSpanClick = useCallback(() => {
     if (!isAdmin) return
@@ -263,14 +232,11 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
       )}
 
       {editingDate && isAdmin ? (
-        <input
-          type="text"
+        <DatePicker
           value={dateValue}
-          onChange={handleDateInputChange}
-          onBlur={handleDateConfirm}
-          onKeyDown={handleDateKeyDown}
-          placeholder="dd/mm/yy"
-          className="bg-transparent border-b border-neon-blue text-xs font-medium outline-none w-20 text-white"
+          onChange={setDateValue}
+          onConfirm={handleDateConfirm}
+          onCancel={handleDateCancel}
         />
       ) : (
         <span
