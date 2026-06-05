@@ -375,4 +375,12 @@ Committed 1442:
 
 Committed 1631: 84eb60b
 
-1027.1 Checkin settings not implimented
+1027.1 [x] Checkin settings not implimented
+
+Committed 1641: 9d5f758
+
+1028. [x] "validation failed" error when archiving projects
+
+    Root cause: The `archiveProject` function calculates a negative `priorityIndex` for archived projects (line 163 in useProjectStore.ts: `const newPriority = minPriority - 1`), but the backend validation schema required `priorityIndex: z.number().int().min(0)`, rejecting negative values.
+
+    Solution: Removed the `.min(0)` constraint from `priorityIndex` in `backend/src/validation/schemas.ts` to allow negative priority indices for archived projects.

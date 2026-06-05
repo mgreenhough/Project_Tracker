@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const projectCreateSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional().nullable(),
-  priorityIndex: z.number().int().min(0).optional(),
+  priorityIndex: z.number().int().optional(), // Allow negative values for archived projects
   isPublic: z.boolean().optional(),
   isArchived: z.boolean().optional(),
   dueDate: z.string().regex(/^\d{2}\/\d{2}\/\d{2}$/).nullable().optional(),
