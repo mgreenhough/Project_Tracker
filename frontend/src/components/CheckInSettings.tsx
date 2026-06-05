@@ -62,13 +62,13 @@ export const CheckInSettings = memo(function CheckInSettings() {
   const currentLabel = INTERVAL_OPTIONS.find((opt) => opt.value === preferences.intervalMinutes)?.label || `${preferences.intervalMinutes} min`
 
   return (
-    <div className="relative inline-block">
-      <div className="flex flex-col items-center">
-        <span className="text-[10px] text-gray-500 mb-0.5">Check-in</span>
+    <div className="relative inline-block self-center">
+      <div className="flex flex-col items-center justify-center h-full">
+        <span className="text-[10px] text-gray-500 mb-0.5 leading-none">Check-in</span>
         <button
           ref={buttonRef}
           onClick={handleToggle}
-          className="px-3 py-2 text-xs text-neon-blue border border-neon-blue/40 bg-neon-blue/10 hover:bg-neon-blue/20 rounded-lg transition-colors tap-active flex items-center gap-2"
+          className="px-3 py-2 text-xs text-neon-blue border border-neon-blue/40 bg-neon-blue/10 hover:bg-neon-blue/20 rounded-lg transition-colors tap-active flex items-center gap-2 leading-none"
           title="Check-in Settings"
         >
           <span>{preferences.enabled ? '⏱' : '🔕'}</span>
