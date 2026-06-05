@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTimerStore } from '../store/useTimerStore'
 
 interface CheckInState {
@@ -196,22 +196,23 @@ export function useCheckIn() {
     }
   }, [])
 
-  // Format away time for display
-  const formattedAwayTime = useCallback((seconds: number) => {
+  // Format away time for display - useMemo to prevent recalculation on every render
+  const formattedAwayTime = useMemo(() => {
+    const seconds = checkInState.awaySeconds
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     if (mins > 0) {
       return `${mins}m ${secs}s`
     }
     return `${secs}s`
-  }, [])
+  }, [checkInState.awaySeconds])
 
   return {
     preferences,
     savePreferences,
     isCheckInPending: checkInState.isCheckInPending,
     awaySeconds: checkInState.awaySeconds,
-    formattedAwayTime: formattedAwayTime(checkInState.awaySeconds),
+    formattedAwayTime,
     resumeTimer,
     skipCheckIn,
     requestNotificationPermission,
