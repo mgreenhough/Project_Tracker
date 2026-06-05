@@ -6,7 +6,7 @@ import 'react-day-picker/dist/style.css'
 interface DatePickerProps {
   value: string
   onChange: (date: string) => void
-  onConfirm: () => void
+  onConfirm: (confirmedValue?: string) => void
   onCancel: () => void
   placeholder?: string
 }
@@ -40,7 +40,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
-        onConfirm()
+        onConfirm(value)
       }
     }
     
@@ -51,13 +51,14 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen, onConfirm])
+  }, [isOpen, onConfirm, value])
   
   const handleSelect = (date: Date | undefined) => {
     if (date) {
-      onChange(formatDate(date))
+      const formattedDate = formatDate(date)
+      onChange(formattedDate)
       setIsOpen(false)
-      onConfirm()
+      onConfirm(formattedDate)
     }
   }
   
@@ -70,7 +71,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     if (regex.test(newValue)) {
       const parsed = parseDate(newValue)
       if (parsed) {
-        onConfirm()
+        onConfirm(newValue)
       }
     }
   }
@@ -78,7 +79,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setIsOpen(false)
-      onConfirm()
+      onConfirm(value)
     } else if (e.key === 'Escape') {
       setIsOpen(false)
       onCancel()
@@ -90,7 +91,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
     setTimeout(() => {
       if (!containerRef.current?.contains(document.activeElement)) {
         setIsOpen(false)
-        onConfirm()
+        onConfirm(value)
       }
     }, 150)
   }
@@ -106,6 +107,7 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
         onKeyDown={handleInputKeyDown}
         placeholder={placeholder}
         className="bg-transparent border-b border-neon-blue text-xs font-medium outline-none w-20 text-white"
+        autoFocus
       />
       
       {isOpen && (

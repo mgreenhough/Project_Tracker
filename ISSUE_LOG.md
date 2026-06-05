@@ -343,3 +343,8 @@ Committed 2306: 5ecdf8d
 
 Committed 02/06/26 1019: 8c2281e 
 Committed 02/06/26 1155 fix (race condition of 1019): f0d8ff5
+
+
+1021. [x] date picker upgrade - date not saving. Fixed: Modified `onConfirm` callback to accept optional `confirmedValue` parameter so the date value is passed directly instead of relying on async state updates.
+
+1022. [x] date picker upgrade - requires two clicks to begin edit, should be one. first opend date edit, second opens calender drop dow. drop down should be activated on first click. Fixed: Added `autoFocus` attribute to the date input field so the calendar dropdown opens immediately when the DatePicker component mounts.

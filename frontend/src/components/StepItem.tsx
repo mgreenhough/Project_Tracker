@@ -110,9 +110,10 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     }
   }, [handleContentConfirm, handleContentCancel])
 
-  const handleDateConfirm = useCallback(() => {
+  const handleDateConfirm = useCallback((confirmedValue?: string) => {
     setEditingDate(false)
-    const trimmed = dateValue.trim()
+    const valueToUse = confirmedValue !== undefined ? confirmedValue : dateValue
+    const trimmed = valueToUse.trim()
     const ddmmyy = /^\d{2}\/\d{2}\/\d{2}$/
     if (trimmed === '' || ddmmyy.test(trimmed)) {
       updateStep(step.projectId, step.id, { dueDate: trimmed || null })
