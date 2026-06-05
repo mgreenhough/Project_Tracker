@@ -372,3 +372,7 @@ Committed 1442:
     Solution: Added `hasLoadedRef` to track which steps have already loaded timers. The effect now only loads timers once per step when first expanded, preventing the re-fetch after deletion.
 
 1027. Added configurable checkin timer settings
+
+Committed 1631: 84eb60b
+
+1027.1 Checkin settings not implimented

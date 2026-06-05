@@ -13,8 +13,20 @@ const INTERVAL_OPTIONS = [
 export const CheckInSettings = memo(function CheckInSettings() {
   const { preferences, savePreferences } = useCheckIn()
   const [isOpen, setIsOpen] = useState(false)
+  const [dropdownStyle, setDropdownStyle] = useState({ top: 0, right: 0 })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Update dropdown position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropdownStyle({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      })
+    }
+  }, [isOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -50,11 +62,11 @@ export const CheckInSettings = memo(function CheckInSettings() {
   const currentLabel = INTERVAL_OPTIONS.find((opt) => opt.value === preferences.intervalMinutes)?.label || `${preferences.intervalMinutes} min`
 
   return (
-    <>
+    <div className="relative inline-block">
       <button
         ref={buttonRef}
         onClick={handleToggle}
-        className="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors tap-active flex items-center gap-2"
+        className="px-3 py-2 text-xs text-neon-blue border border-neon-blue/40 bg-neon-blue/10 hover:bg-neon-blue/20 rounded-lg transition-colors tap-active flex items-center gap-2"
         title="Check-in Settings"
       >
         <span>{preferences.enabled ? '⏱' : '🔕'}</span>
@@ -66,8 +78,7 @@ export const CheckInSettings = memo(function CheckInSettings() {
           ref={dropdownRef}
           className="fixed bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-[9999] animate-fade-in"
           style={{
-            top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 : 0,
-            right: buttonRef.current ? window.innerWidth - buttonRef.current.getBoundingClientRect().right : 0,
+            ...dropdownStyle,
             width: '224px',
           }}
         >
@@ -121,6 +132,6 @@ export const CheckInSettings = memo(function CheckInSettings() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 })
