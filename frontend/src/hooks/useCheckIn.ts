@@ -21,7 +21,6 @@ const defaultPreferences: CheckInPreferences = {
 
 export function useCheckIn() {
   const runningTimerId = useTimerStore((s) => s.runningTimerId)
-  const timers = useTimerStore((s) => s.timers)
   const stopTimerById = useTimerStore((s) => s.stopTimerById)
   const startTimerById = useTimerStore((s) => s.startTimerById)
 
@@ -151,7 +150,7 @@ export function useCheckIn() {
     timerStartTimeRef.current = null
   }, [])
 
-  // Monitor running timer changes
+  // Monitor running timer changes - only depend on runningTimerId
   useEffect(() => {
     if (!runningTimerId) {
       // No timer running - clear everything
@@ -168,25 +167,32 @@ export function useCheckIn() {
       return
     }
 
-    // Find the running timer
-    for (const [stepId, stepTimers] of timers) {
-      const timer = stepTimers.find((t) => t.id === runningTimerId && t.isRunning)
-      if (timer) {
-        // New timer started
-        if (runningTimerRef.current?.id !== runningTimerId) {
-          runningTimerRef.current = { id: timer.id, stepId }
-          timerStartTimeRef.current = Date.now()
-
-          // Request notification permission on first timer start
-          requestNotificationPermission()
-
-          // Start check-in timer
-          startCheckInTimer()
+    // New timer started - use getTimerStore().getState() to avoid dependency on timers Map
+    if (runningTimerRef.current?.id !== runningTimerId) {
+      // Find the timer directly from store to avoid timers Map dependency
+      let foundTimer: { id: string; stepId: string } | null = null
+      const currentTimers = useTimerStore.getState().timers
+      
+      for (const [stepId, stepTimers] of currentTimers) {
+        const timer = stepTimers.find((t) => t.id === runningTimerId && t.isRunning)
+        if (timer) {
+          foundTimer = { id: timer.id, stepId }
+          break
         }
-        break
+      }
+
+      if (foundTimer) {
+        runningTimerRef.current = foundTimer
+        timerStartTimeRef.current = Date.now()
+
+        // Request notification permission on first timer start
+        requestNotificationPermission()
+
+        // Start check-in timer
+        startCheckInTimer()
       }
     }
-  }, [runningTimerId, timers, startCheckInTimer, requestNotificationPermission])
+  }, [runningTimerId, startCheckInTimer, requestNotificationPermission])
 
   // Cleanup on unmount
   useEffect(() => {
