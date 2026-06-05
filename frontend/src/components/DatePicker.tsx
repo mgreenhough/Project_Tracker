@@ -126,13 +126,27 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
       />
       
       {isOpen && (
-        <div className="absolute z-50 mt-1 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl">
+        <div className="absolute z-[100] mt-1 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] overflow-auto">
           <style>{`
             .rdp {
-              --rdp-cell-size: 36px;
+              --rdp-cell-size: 32px;
               --rdp-accent-color: #3b82f6;
               --rdp-background-color: #1f2937;
               margin: 0;
+            }
+            @media (max-width: 640px) {
+              .rdp {
+                --rdp-cell-size: 28px;
+              }
+              .rdp-caption_label {
+                font-size: 0.875rem;
+              }
+              .rdp-head_cell {
+                font-size: 0.75rem;
+              }
+              .rdp-day {
+                font-size: 0.875rem;
+              }
             }
             .rdp-day_selected {
               background-color: #3b82f6 !important;
@@ -172,6 +186,20 @@ export function DatePicker({ value, onChange, onConfirm, onCancel, placeholder =
             onSelect={handleSelect}
             weekStartsOn={1}
           />
+          {value && (
+            <button
+              type="button"
+              onClick={() => {
+                justSelectedRef.current = true
+                onChange('')
+                setIsOpen(false)
+                onConfirm('')
+              }}
+              className="mt-2 w-full py-1 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded transition-colors border border-red-900/50"
+            >
+              Clear Date
+            </button>
+          )}
         </div>
       )}
     </div>

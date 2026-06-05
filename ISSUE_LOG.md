@@ -352,3 +352,11 @@ Committed 02/06/26 1155 fix (race condition of 1019): f0d8ff5
 Committed 05/06/26 1413: 8606258
 
 1021.1 [x] date flashes breifly but doesnt persist. Fixed: Added `justSelectedRef` to prevent double `onConfirm` calls. When a date is selected from the calendar, the click outside handler was also triggering and calling `onConfirm` again with stale state, causing the date to flash then revert. The ref now blocks the duplicate confirm call.
+
+Committed 1419: 1104687
+
+1023. [x] date picker upgrade - other tasks text and icons show over the top of the calendar drop down. calender should show on top of everything. Fixed: Increased z-index from `z-50` to `z-[100]` to ensure calendar appears on top of all other elements.
+
+1024. [x] date picker upgrade, there apears to be no way of removing a due date other than backspacing, does datepicker facilitate a delete button? Fixed: Added "Clear Date" button below the calendar that appears when a date is set. Clicking it clears the date and closes the picker.
+
+1025. [x] date picker upgrade, on mobile, when at 100% zoom, part of the calendar is off screen and you can access it. Fixed: Made calendar responsive for mobile - reduced cell size (32px default, 28px on mobile), added max-width constraint to viewport, added responsive font sizes, and enabled horizontal scroll if needed.
