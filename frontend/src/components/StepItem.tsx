@@ -42,12 +42,8 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   const cycleStepStatus = useProjectStore((s) => s.cycleStepStatus)
   const updateStep = useProjectStore((s) => s.updateStep)
   const deleteStep = useProjectStore((s) => s.deleteStep)
-  const hasTimers = useTimerStore((s) => s.timers.has(step.id) && s.timers.get(step.id)!.length > 0)
-  const hasRunningTimer = useTimerStore((s) => {
-    const stepTimers = s.timers.get(step.id)
-    if (!stepTimers) return false
-    return stepTimers.some((t) => t.isRunning) || stepTimers.some((t) => t.id === s.runningTimerId)
-  })
+  // Only subscribe to runningTimerId, not the entire timers Map
+  const runningTimerId = useTimerStore((s) => s.runningTimerId)
   const config = statusConfig[step.status]
 
   const [editingContent, setEditingContent] = useState(false)
@@ -186,7 +182,10 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     setShowTimers((prev) => !prev)
   }, [isProjectFront, onBringToFront])
 
-  // hasTimers and hasRunningTimer are now computed by stable selectors above
+  // Check timer status without subscribing to the timers Map (prevents infinite loop)
+  const timers = useTimerStore.getState().timers.get(step.id)
+  const hasTimers = timers && timers.length > 0
+  const hasRunningTimer = timers ? timers.some((t) => t.isRunning || t.id === runningTimerId) : false
 
   const {
     attributes,
