@@ -54,6 +54,7 @@ npm run dev
 - **Drag-and-drop priority** — reorder projects and steps instantly
 - **Tri-state checkboxes** — Clear → Hold Point → Complete
 - **Urgency highlighting** — red (≤7d), orange (≤14d), white (>14d)
+- **Task Timers** — track time spent on individual steps with clock icon toggle, play/pause/reset controls, project total time display, and anti-forgot protection with periodic check-ins
 - **Zoom / overlap view** — cascade cards to fit more on screen
 - **Mobile optimised** — touch-friendly, rotatable layout
 

@@ -10,6 +10,7 @@ import { ArchivedRow } from './components/ArchivedRow'
 import { LoginPage } from './components/LoginPage'
 import { TabBar } from './components/TabBar'
 import { CheckInModal } from './components/CheckInModal'
+import { CheckInSettings } from './components/CheckInSettings'
 import { fetchTabTotalTime } from './api'
 
 function SkeletonCard() {
@@ -115,6 +116,7 @@ const MainLayout = memo(function MainLayout() {
           ) : isAdmin ? (
             <>
               <span className="text-xs text-emerald-400 border border-emerald-400/30 px-2 py-1 rounded">Admin</span>
+              <CheckInSettings />
               <button
                 className="px-4 py-2 bg-neon-blue/20 text-neon-blue border border-neon-blue/40 rounded-lg text-sm font-medium active:bg-neon-blue/30 transition-colors tap-active"
                 onClick={handleAddProject}
@@ -129,12 +131,15 @@ const MainLayout = memo(function MainLayout() {
               </button>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg text-sm font-medium active:bg-gray-700 transition-colors tap-active"
-            >
-              Login
-            </Link>
+            <>
+              <CheckInSettings />
+              <Link
+                to="/login"
+                className="px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg text-sm font-medium active:bg-gray-700 transition-colors tap-active"
+              >
+                Login
+              </Link>
+            </>
           )}
         </div>
       </div>

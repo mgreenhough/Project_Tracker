@@ -505,6 +505,13 @@ Summary of changes:
   - "Resume Timer" button to continue
   - "Skip" button to stay paused
 
+- `frontend/src/components/CheckInSettings.tsx` (new) — Settings UI for configuring check-in:
+  - Dropdown button showing current setting (e.g., "⏱ 30 min" or "🔕 Off")
+  - Toggle to enable/disable check-in functionality
+  - Grid of interval options: 15 min, 30 min, 45 min, 1 hour, 1.5 hours, 2 hours
+  - Click-outside-to-close behavior
+  - Integrated into App.tsx header for all users
+
 - `backend/src/db/database.ts` — Added `check_in_disabled` field to timers table
 
 - `backend/src/validation/schemas.ts` — Added checkInDisabled to timerUpdateSchema
@@ -605,4 +612,4 @@ Summary of changes:
 - `frontend/src/components/ProjectCard.tsx` — add total time display
 - `frontend/src/App.tsx` or project stack component — add tab total investment display
 
-Committed 05/06/26 a82376a
+Committed 05/06/26 aabb488
