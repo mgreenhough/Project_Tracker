@@ -605,4 +605,4 @@ Summary of changes:
 - `frontend/src/components/ProjectCard.tsx` — add total time display
 - `frontend/src/App.tsx` or project stack component — add tab total investment display
 
-Committed 05/06/26 6a544fc
+Committed 05/06/26 a82376a

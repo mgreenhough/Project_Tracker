@@ -1,7 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import { useEffect, memo, useCallback, useState, useMemo } from 'react'
 import { useAuth } from './hooks/useAuth'
-import { useCheckIn } from './hooks/useCheckIn'
+// import { useCheckIn } from './hooks/useCheckIn'
 import { useProjectStore } from './store/useProjectStore'
 import { useTabStore } from './store/useTabStore'
 import { activeProjectsSorted, archivedProjectsSorted } from './store/selectors'
@@ -9,7 +9,7 @@ import { ProjectStack } from './components/ProjectStack'
 import { ArchivedRow } from './components/ArchivedRow'
 import { LoginPage } from './components/LoginPage'
 import { TabBar } from './components/TabBar'
-import { CheckInModal } from './components/CheckInModal'
+// import { CheckInModal } from './components/CheckInModal'
 import { fetchTabTotalTime } from './api'
 
 function SkeletonCard() {
@@ -42,13 +42,13 @@ const MainLayout = memo(function MainLayout() {
 
   const [tabTotalSeconds, setTabTotalSeconds] = useState<number>(0)
 
-  // Check-in functionality
-  const {
-    isCheckInPending,
-    formattedAwayTime,
-    resumeTimer,
-    skipCheckIn,
-  } = useCheckIn()
+  // Check-in functionality - TEMPORARILY DISABLED
+  // const {
+  //   isCheckInPending,
+  //   formattedAwayTime,
+  //   resumeTimer,
+  //   skipCheckIn,
+  // } = useCheckIn()
 
   useEffect(() => {
     if (!authLoading) {
@@ -162,13 +162,13 @@ const MainLayout = memo(function MainLayout() {
       <ProjectStack projects={active} isAdmin={isAdmin} onReorder={reorderProjects} />
       <ArchivedRow projects={archived} isAdmin={isAdmin} />
 
-      {/* Check-in modal */}
-      <CheckInModal
+      {/* Check-in modal - TEMPORARILY DISABLED */}
+      {/* <CheckInModal
         isOpen={isCheckInPending}
         formattedAwayTime={formattedAwayTime}
         onResume={resumeTimer}
         onSkip={skipCheckIn}
-      />
+      /> */}
     </div>
   )
 })
