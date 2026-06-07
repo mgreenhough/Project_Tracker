@@ -37,8 +37,12 @@ export function useCheckIn() {
 
   const timerStartTimeRef = useRef<number | null>(null)
   const checkInTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const gracePeriodTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const awayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const runningTimerRef = useRef<{ id: string; stepId: string } | null>(null)
+  const notificationRef = useRef<Notification | null>(null)
+  
+  const GRACE_PERIOD_MS = 2 * 60 * 1000 // 2 minutes
 
   // Save preferences
   const savePreferences = useCallback((newPrefs: Partial<CheckInPreferences>) => {
@@ -54,16 +58,54 @@ export function useCheckIn() {
     }
   }, [])
 
+  // Ref to hold startCheckInTimer function - declared before use
+  const startCheckInTimerRef = useRef<(() => void) | null>(null)
+  
+  // Handle notification click - restarts check-in timer
+  const handleNotificationClick = useCallback(() => {
+    // Cancel the grace period - user responded
+    if (gracePeriodTimeoutRef.current) {
+      clearTimeout(gracePeriodTimeoutRef.current)
+      gracePeriodTimeoutRef.current = null
+    }
+    // Don't stop the timer - user responded in time
+    setCheckInState({
+      isCheckInPending: false,
+      awaySeconds: 0,
+      lastCheckInAt: null,
+    })
+    // Restart check-in timer for next interval
+    startCheckInTimerRef.current?.()
+  }, [])
+  
   // Show browser notification
   const showNotification = useCallback((title: string, body: string) => {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, {
+      // Close any existing notification
+      if (notificationRef.current) {
+        notificationRef.current.close()
+      }
+      
+      const notification = new Notification(title, {
         body,
-        icon: '⏱',
+        icon: '/favicon.svg',
         requireInteraction: true,
       })
+      
+      notificationRef.current = notification
+      
+      // Clicking notification focuses window and cancels grace period
+      notification.onclick = () => {
+        window.focus()
+        notification.close()
+        notificationRef.current = null
+        handleNotificationClick()
+      }
+      
+      return notification
     }
-  }, [])
+    return null
+  }, [handleNotificationClick])
 
   // Start check-in timer
   const startCheckInTimer = useCallback(() => {
@@ -74,6 +116,10 @@ export function useCheckIn() {
       clearTimeout(checkInTimeoutRef.current)
       checkInTimeoutRef.current = null
     }
+    if (gracePeriodTimeoutRef.current) {
+      clearTimeout(gracePeriodTimeoutRef.current)
+      gracePeriodTimeoutRef.current = null
+    }
     if (awayIntervalRef.current) {
       clearInterval(awayIntervalRef.current)
       awayIntervalRef.current = null
@@ -82,34 +128,42 @@ export function useCheckIn() {
     const intervalMs = preferences.intervalMinutes * 60 * 1000
 
     checkInTimeoutRef.current = setTimeout(() => {
-      // Time for check-in - pause the timer
+      // Time for check-in - show notification but DON'T stop timer yet
       if (runningTimerRef.current) {
         const { id, stepId } = runningTimerRef.current
-        stopTimerById(id, stepId).then(() => {
-          setCheckInState({
-            isCheckInPending: true,
-            awaySeconds: 0,
-            lastCheckInAt: Date.now(),
+        
+        // Show notification first - timer keeps running during grace period
+        showNotification(
+          'Check-in Required',
+          `Still working? Timer will pause in 2 minutes if you don't respond.`
+        )
+
+        // Start grace period - timer continues running
+        gracePeriodTimeoutRef.current = setTimeout(() => {
+          // Grace period expired - now stop the timer
+          stopTimerById(id, stepId).then(() => {
+            setCheckInState({
+              isCheckInPending: true,
+              awaySeconds: 0,
+              lastCheckInAt: Date.now(),
+            })
+
+            // Start tracking away time
+            if (awayIntervalRef.current) clearInterval(awayIntervalRef.current)
+            awayIntervalRef.current = setInterval(() => {
+              setCheckInState((prev) => ({
+                ...prev,
+                awaySeconds: prev.awaySeconds + 1,
+              }))
+            }, 1000)
           })
-
-          // Show notification
-          showNotification(
-            'Timer Paused - Check In',
-            `Still working? Timer has been paused. Click to resume.`
-          )
-
-          // Start tracking away time
-          if (awayIntervalRef.current) clearInterval(awayIntervalRef.current)
-          awayIntervalRef.current = setInterval(() => {
-            setCheckInState((prev) => ({
-              ...prev,
-              awaySeconds: prev.awaySeconds + 1,
-            }))
-          }, 1000)
-        })
+        }, GRACE_PERIOD_MS)
       }
     }, intervalMs)
   }, [preferences.enabled, preferences.intervalMinutes, stopTimerById, showNotification])
+
+  // Store startCheckInTimer in ref so handleNotificationClick can access it
+  startCheckInTimerRef.current = startCheckInTimer
 
   // Resume timer after check-in
   const resumeTimer = useCallback(async () => {

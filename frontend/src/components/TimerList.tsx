@@ -37,7 +37,7 @@ export const TimerList = memo(function TimerList({ stepId, projectId, isAdmin, i
   return (
     <div className="pl-8 pr-2 py-2 bg-black/20 rounded ml-4">
       {/* Timer list */}
-      <div className="space-y-1">
+      <div className="space-y-1 w-full min-w-0">
         {(timers || []).map((timer: Timer) => (
           <TimerItem
             key={timer.id}

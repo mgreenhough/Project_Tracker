@@ -384,3 +384,21 @@ Committed 1641: 9d5f758
     Root cause: The `archiveProject` function calculates a negative `priorityIndex` for archived projects (line 163 in useProjectStore.ts: `const newPriority = minPriority - 1`), but the backend validation schema required `priorityIndex: z.number().int().min(0)`, rejecting negative values.
 
     Solution: Removed the `.min(0)` constraint from `priorityIndex` in `backend/src/validation/schemas.ts` to allow negative priority indices for archived projects.
+
+Committed 1707: 9957e0c
+
+1029. [x] Cant edit timer text? either no room or not working at all.
+    
+    Root cause: Timer description input was collapsing due to missing width constraints in flex containers.
+    
+    Solution: Added `w-full min-w-0` to parent container and `w-full` to input element in TimerItem.tsx, and `w-full min-w-0` to timer list container in TimerList.tsx.
+
+1030. [x] Timer notification working but timer already stopped when i went back to restart? i thought there was a 2min buffer or somthing on that?
+    
+    Root cause: Check-in system was immediately stopping the timer when interval elapsed, instead of giving a 2-minute grace period.
+    
+    Solution: 
+    - Added `GRACE_PERIOD_MS = 2 minutes` constant
+    - Modified flow: Show notification → Timer continues running for 2 min → Only stop if no response
+    - Clicking notification cancels grace period, keeps timer running, restarts check-in timer
+    - Added notification click handler and proper cleanup
