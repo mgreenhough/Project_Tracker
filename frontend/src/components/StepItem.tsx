@@ -181,10 +181,10 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
     setShowTimers((prev) => !prev)
   }, [isProjectFront, onBringToFront])
 
-  // Get timer status
-  const timers = useTimerStore.getState().timers.get(step.id)
-  const hasTimers = timers && timers.length > 0
-  const hasRunningTimer = timers ? timers.some((t) => t.isRunning || t.id === runningTimerId) : false
+  // Get timer status - use selector to subscribe to changes
+  const stepTimers = useTimerStore((state) => state.timers.get(step.id))
+  const hasTimers = stepTimers && stepTimers.length > 0
+  const hasRunningTimer = stepTimers ? stepTimers.some((t) => t.isRunning || t.id === runningTimerId) : false
 
   const {
     attributes,

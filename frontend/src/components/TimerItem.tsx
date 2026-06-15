@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from 'react'
+import { memo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTimerStore } from '../store/useTimerStore'
 import type { Timer } from '../types'
 
@@ -14,6 +14,21 @@ function formatTime(totalSeconds: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+// Helper to parse HH:MM:SS to seconds
+function parseTime(timeStr: string): number | null {
+  const parts = timeStr.split(':')
+  if (parts.length !== 3) return null
+  
+  const hours = parseInt(parts[0], 10)
+  const minutes = parseInt(parts[1], 10)
+  const seconds = parseInt(parts[2], 10)
+  
+  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null
+  if (minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) return null
+  
+  return hours * 3600 + minutes * 60 + seconds
 }
 
 export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: TimerItemProps) {
@@ -79,6 +94,56 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
     }
   }, [])
 
+  // Manual time editing
+  const [editingTime, setEditingTime] = useState(false)
+  const [timeInputValue, setTimeInputValue] = useState(displayTime)
+  const timeInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!editingTime) {
+      setTimeInputValue(displayTime)
+    }
+  }, [displayTime, editingTime])
+
+  useEffect(() => {
+    if (editingTime && timeInputRef.current) {
+      timeInputRef.current.focus()
+      timeInputRef.current.select()
+    }
+  }, [editingTime])
+
+  const handleTimeClick = useCallback(() => {
+    if (!isAdmin || timer.isRunning) return
+    setEditingTime(true)
+  }, [isAdmin, timer.isRunning])
+
+  const handleTimeConfirm = useCallback(() => {
+    const newSeconds = parseTime(timeInputValue)
+    if (newSeconds !== null) {
+      updateTimerById(timer.id, stepId, { elapsedSeconds: newSeconds })
+    }
+    setEditingTime(false)
+  }, [timeInputValue, timer.id, stepId, updateTimerById])
+
+  const handleTimeCancel = useCallback(() => {
+    setTimeInputValue(displayTime)
+    setEditingTime(false)
+  }, [displayTime])
+
+  const handleTimeKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTimeConfirm()
+    } else if (e.key === 'Escape') {
+      handleTimeCancel()
+    }
+  }, [handleTimeConfirm, handleTimeCancel])
+
+  const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow digits and colons
+    const value = e.target.value.replace(/[^0-9:]/g, '')
+    setTimeInputValue(value)
+  }, [])
+
   return (
     <div className="flex items-center gap-2 text-sm py-1 w-full min-w-0">
       {/* Description input */}
@@ -90,13 +155,31 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
         onKeyDown={handleDescriptionKeyDown}
         placeholder="Timer description..."
         disabled={!isAdmin}
-        className="flex-1 bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue min-w-0 px-1 w-full"
+        className="flex-1 bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue min-w-0 px-1"
       />
 
-      {/* Time display */}
-      <span className={`font-mono text-sm w-20 text-center ${timer.isRunning ? 'text-neon-green' : 'text-gray-400'}`}>
-        {displayTime}
-      </span>
+      {/* Time display - editable for admins when timer is stopped */}
+      {editingTime && isAdmin ? (
+        <input
+          ref={timeInputRef}
+          type="text"
+          value={timeInputValue}
+          onChange={handleTimeChange}
+          onBlur={handleTimeConfirm}
+          onKeyDown={handleTimeKeyDown}
+          className="font-mono text-sm w-20 text-center bg-transparent border-b border-neon-blue text-neon-blue outline-none"
+          placeholder="HH:MM:SS"
+          maxLength={8}
+        />
+      ) : (
+        <span 
+          className={`font-mono text-sm w-20 text-center ${timer.isRunning ? 'text-neon-green' : 'text-gray-400'} ${isAdmin && !timer.isRunning ? 'cursor-pointer hover:text-neon-blue' : ''}`}
+          onClick={handleTimeClick}
+          title={isAdmin && !timer.isRunning ? 'Click to edit time' : ''}
+        >
+          {displayTime}
+        </span>
+      )}
 
       {/* Play/Pause button */}
       {isAdmin && (

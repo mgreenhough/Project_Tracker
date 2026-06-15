@@ -82,7 +82,7 @@ router.post('/', requireAuth, (req: AuthRequest, res) => {
   res.status(201).json({ timer: rowToTimer(row) });
 });
 
-// PATCH /timers/:id — update a timer (description only)
+// PATCH /timers/:id — update a timer (description, checkInDisabled, elapsedSeconds)
 router.patch('/:id', requireAuth, (req: AuthRequest, res) => {
   const parse = timerUpdateSchema.safeParse(req.body);
   if (!parse.success) {
@@ -104,11 +104,13 @@ router.patch('/:id', requireAuth, (req: AuthRequest, res) => {
     UPDATE timers SET
       description = COALESCE(?, description),
       check_in_disabled = COALESCE(?, check_in_disabled),
+      elapsed_seconds = COALESCE(?, elapsed_seconds),
       updated_at = ?
     WHERE id = ?
   `).run(
     data.description ?? null,
     data.checkInDisabled !== undefined ? (data.checkInDisabled ? 1 : 0) : null,
+    data.elapsedSeconds !== undefined ? data.elapsedSeconds : null,
     now,
     id
   );

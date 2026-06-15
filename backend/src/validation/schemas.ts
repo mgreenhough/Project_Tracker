@@ -45,4 +45,5 @@ export const timerCreateSchema = z.object({
 export const timerUpdateSchema = z.object({
   description: z.string().max(200).optional(),
   checkInDisabled: z.boolean().optional(),
+  elapsedSeconds: z.number().int().min(0).optional(),
 });

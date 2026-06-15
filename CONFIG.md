@@ -8,10 +8,11 @@ SERVER_PASSWORD = os.getenv("SERVER_PASSWORD", "Mgb8TTC1VrJ6")
 
 # SSH Credentials
 SSH_HOST = "203.57.51.49"
-SSH_PORT = 22
+SSH_PORT = 2222
 SSH_USER = "root"
-SSH_PASSWORD = "Mgb8TTC1VrJ6"
-SSH_KEY_PATH = ""  # Leave empty to use password auth
+SSH_KEY_PATH = "~/.ssh/id_ed25519"  # SSH key authentication only
+
+Root Password = !DnqzwDULcww78M
 
 # GITHUB
 https://github.com/mgreenhough

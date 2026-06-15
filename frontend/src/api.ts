@@ -235,7 +235,7 @@ export async function createTimer(stepId: string, projectId: string, description
   return parseJsonBody(res)
 }
 
-export async function updateTimer(id: string, updates: { description?: string }) {
+export async function updateTimer(id: string, updates: { description?: string; elapsedSeconds?: number }) {
   const res = await fetchWithAuth(`/timers/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(updates),

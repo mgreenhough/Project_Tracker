@@ -23,7 +23,7 @@ interface TimerStoreActions {
   // Timer CRUD
   loadTimers: (stepId: string) => Promise<void>
   addTimer: (stepId: string, projectId: string, description?: string) => Promise<Timer | undefined>
-  updateTimerById: (id: string, stepId: string, updates: { description?: string; checkInDisabled?: boolean }) => void
+  updateTimerById: (id: string, stepId: string, updates: { description?: string; checkInDisabled?: boolean; elapsedSeconds?: number }) => void
   removeTimer: (id: string, stepId: string) => void
 
   // Timer controls
@@ -131,7 +131,7 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
     }
   },
 
-  updateTimerById: (id: string, stepId: string, updates: { description?: string }) => {
+  updateTimerById: (id: string, stepId: string, updates: { description?: string; checkInDisabled?: boolean; elapsedSeconds?: number }) => {
     set((state) => {
       const newTimers = new Map(state.timers)
       const stepTimers = newTimers.get(stepId) || []
