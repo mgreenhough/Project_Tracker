@@ -479,3 +479,22 @@ da4c1b7
     **Disclosure Document:** SERVER_PROVIDER_DISCLOSURE.md ready to send
     
     ========================================
+
+    committed 86baf64
+
+    1029.2 [x] STILL cant edit timer text. Clicking inside text field does nothing.
+    
+    Root cause: Timer description input had `min-w-0` which, combined with `flex-1` in a narrow container (especially on mobile or in small project cards), allowed the input to collapse to zero width. With zero width, the input was unclickable.
+    
+    Solution: Changed `min-w-0` to `min-w-[60px]` in TimerItem.tsx description input className. This ensures the input always has a minimum clickable width.
+
+    1034. [x] Clock symbol only shows that there are timers attached AFTER opening timers. User should be able to see "where" timers are if they are minimised
+    
+    Root cause: The clock dot indicator (`hasTimers`) was derived solely from the Zustand timer store (`useTimerStore`), which only loads timer data when the user expands a step's timer panel. On initial page load, the store is empty, so no steps show the timer dot indicator.
+    
+    Solution: Added `timerCount` to the `Step` type and the backend `GET /projects` route. The backend now queries `COUNT(*) FROM timers GROUP BY step_id` for all steps and returns the count with each step. The frontend `StepItem` now derives `hasTimers` from both `step.timerCount` (server data available on initial load) and the Zustand store (for real-time accuracy after the user opens timers). This way, steps with timers show the dot immediately on page load.
+    
+    Files changed:
+    - `frontend/src/types.ts` - Added `timerCount: number` to `Step` interface
+    - `backend/src/routes/projects.ts` - Added timer count aggregation query and attached counts to steps
+    - `frontend/src/components/StepItem.tsx` - Updated `hasTimers` logic to use both server `timerCount` and store data

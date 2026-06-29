@@ -184,6 +184,7 @@ export const ProjectCard = memo(function ProjectCard({ project, isAdmin, isArchi
       status: 'CLEAR',
       stepOrder: nextOrder,
       dueDate: null,
+      timerCount: 0,
     })
   }, [project.id, steps, addStep])
 

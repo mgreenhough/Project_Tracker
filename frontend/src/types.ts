@@ -15,6 +15,7 @@ export interface Step {
   status: StepStatus
   stepOrder: number
   dueDate: string | null
+  timerCount: number
   createdAt: string
   updatedAt: string
 }

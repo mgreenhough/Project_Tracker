@@ -155,7 +155,7 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
         onKeyDown={handleDescriptionKeyDown}
         placeholder="Timer description..."
         disabled={!isAdmin}
-        className="flex-1 bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue min-w-0 px-1"
+        className="flex-1 bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue min-w-[60px] px-1"
       />
 
       {/* Time display - editable for admins when timer is stopped */}

@@ -81,8 +81,25 @@ router.get('/', (req, res) => {
     stepsByProject.set(s.project_id, arr);
   }
 
+  // Fetch timer counts per step for all projects at once
+  const stepIds = (stepRows as any[]).map((s) => s.id);
+  const timerCounts = new Map<string, number>();
+  if (stepIds.length > 0) {
+    const placeholders = stepIds.map(() => '?').join(',');
+    const countRows = db.prepare(
+      `SELECT step_id, COUNT(*) as count FROM timers WHERE step_id IN (${placeholders}) GROUP BY step_id`
+    ).all(...stepIds) as any[];
+    for (const row of countRows) {
+      timerCounts.set(row.step_id, row.count);
+    }
+  }
+
   for (const p of projects) {
-    p.steps = stepsByProject.get(p.id) || [];
+    const steps = stepsByProject.get(p.id) || [];
+    for (const s of steps) {
+      s.timerCount = timerCounts.get(s.id) || 0;
+    }
+    p.steps = steps;
   }
 
   res.json({ projects });
