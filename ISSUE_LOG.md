@@ -498,3 +498,5 @@ da4c1b7
     - `frontend/src/types.ts` - Added `timerCount: number` to `Step` interface
     - `backend/src/routes/projects.ts` - Added timer count aggregation query and attached counts to steps
     - `frontend/src/components/StepItem.tsx` - Updated `hasTimers` logic to use both server `timerCount` and store data
+
+committed 8ccc863

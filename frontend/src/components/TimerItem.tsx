@@ -20,14 +20,14 @@ function formatTime(totalSeconds: number): string {
 function parseTime(timeStr: string): number | null {
   const parts = timeStr.split(':')
   if (parts.length !== 3) return null
-  
+
   const hours = parseInt(parts[0], 10)
   const minutes = parseInt(parts[1], 10)
   const seconds = parseInt(parts[2], 10)
-  
+
   if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null
   if (minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) return null
-  
+
   return hours * 3600 + minutes * 60 + seconds
 }
 
@@ -83,10 +83,6 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
   const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     updateTimerById(timer.id, stepId, { description: e.target.value })
   }, [timer.id, stepId, updateTimerById])
-
-  const handleDescriptionBlur = useCallback(() => {
-    // Auto-save on blur
-  }, [])
 
   const handleDescriptionKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -145,93 +141,95 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
   }, [])
 
   return (
-    <div className="flex items-center gap-2 text-sm py-1 w-full min-w-0">
-      {/* Description input */}
+    <div className="flex flex-col gap-0 py-0.5 w-full">
+      {/* Description input — full width, aligned with timer below */}
       <input
         type="text"
         value={timer.description}
         onChange={handleDescriptionChange}
-        onBlur={handleDescriptionBlur}
         onKeyDown={handleDescriptionKeyDown}
         placeholder="Timer description..."
         disabled={!isAdmin}
-        className="flex-1 bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue min-w-[60px] px-1"
+        className="w-full bg-transparent border-b border-gray-700 text-gray-300 placeholder-gray-600 outline-none focus:border-neon-blue text-sm leading-tight"
       />
 
-      {/* Time display - editable for admins when timer is stopped */}
-      {editingTime && isAdmin ? (
-        <input
-          ref={timeInputRef}
-          type="text"
-          value={timeInputValue}
-          onChange={handleTimeChange}
-          onBlur={handleTimeConfirm}
-          onKeyDown={handleTimeKeyDown}
-          className="font-mono text-sm w-20 text-center bg-transparent border-b border-neon-blue text-neon-blue outline-none"
-          placeholder="HH:MM:SS"
-          maxLength={8}
-        />
-      ) : (
-        <span 
-          className={`font-mono text-sm w-20 text-center ${timer.isRunning ? 'text-neon-green' : 'text-gray-400'} ${isAdmin && !timer.isRunning ? 'cursor-pointer hover:text-neon-blue' : ''}`}
-          onClick={handleTimeClick}
-          title={isAdmin && !timer.isRunning ? 'Click to edit time' : ''}
-        >
-          {displayTime}
-        </span>
-      )}
+      {/* Controls row: time + buttons */}
+      <div className="flex items-center gap-2 mt-0.5">
+        {/* Time display - editable for admins when timer is stopped */}
+        {editingTime && isAdmin ? (
+          <input
+            ref={timeInputRef}
+            type="text"
+            value={timeInputValue}
+            onChange={handleTimeChange}
+            onBlur={handleTimeConfirm}
+            onKeyDown={handleTimeKeyDown}
+            className="font-mono text-sm w-20 text-center bg-transparent border-b border-neon-blue text-neon-blue outline-none shrink-0"
+            placeholder="HH:MM:SS"
+            maxLength={8}
+          />
+        ) : (
+          <span
+            className={`font-mono text-sm w-20 text-center shrink-0 ${timer.isRunning ? 'text-neon-green' : 'text-gray-400'} ${isAdmin && !timer.isRunning ? 'cursor-pointer hover:text-neon-blue' : ''}`}
+            onClick={handleTimeClick}
+            title={isAdmin && !timer.isRunning ? 'Click to edit time' : ''}
+          >
+            {displayTime}
+          </span>
+        )}
 
-      {/* Play/Pause button */}
-      {isAdmin && (
-        <button
-          type="button"
-          onClick={handlePlayPause}
-          className={`w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors ${
-            timer.isRunning ? 'text-neon-green' : 'text-gray-400'
-          } hover:text-neon-blue`}
-          title={timer.isRunning ? 'Pause timer' : 'Start timer'}
-        >
-          {timer.isRunning ? '⏸' : '▶'}
-        </button>
-      )}
+        {/* Play/Pause button */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handlePlayPause}
+            className={`w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors shrink-0 ${
+              timer.isRunning ? 'text-neon-green' : 'text-gray-400'
+            } hover:text-neon-blue`}
+            title={timer.isRunning ? 'Pause timer' : 'Start timer'}
+          >
+            {timer.isRunning ? '⏸' : '▶'}
+          </button>
+        )}
 
-      {/* Reset button */}
-      {isAdmin && (
-        <button
-          type="button"
-          onClick={handleReset}
-          className="w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors text-gray-400 hover:text-neon-yellow"
-          title="Reset timer"
-        >
-          ↺
-        </button>
-      )}
+        {/* Reset button */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors text-gray-400 hover:text-neon-yellow shrink-0"
+            title="Reset timer"
+          >
+            ↺
+          </button>
+        )}
 
-      {/* Check-in disable toggle */}
-      {isAdmin && (
-        <button
-          type="button"
-          onClick={() => updateTimerById(timer.id, stepId, { checkInDisabled: !timer.checkInDisabled })}
-          className={`w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors ${
-            timer.checkInDisabled ? 'text-neon-orange' : 'text-gray-600'
-          } hover:text-neon-orange`}
-          title={timer.checkInDisabled ? 'Check-in disabled (timer runs continuously)' : 'Enable check-in reminders'}
-        >
-          {timer.checkInDisabled ? '🔔' : '🔕'}
-        </button>
-      )}
+        {/* Check-in disable toggle */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => updateTimerById(timer.id, stepId, { checkInDisabled: !timer.checkInDisabled })}
+            className={`w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors shrink-0 ${
+              timer.checkInDisabled ? 'text-neon-orange' : 'text-gray-600'
+            } hover:text-neon-orange`}
+            title={timer.checkInDisabled ? 'Check-in disabled (timer runs continuously)' : 'Enable check-in reminders'}
+          >
+            {timer.checkInDisabled ? '🔔' : '🔕'}
+          </button>
+        )}
 
-      {/* Delete button */}
-      {isAdmin && (
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors text-gray-600 hover:text-neon-red"
-          title="Delete timer"
-        >
-          ×
-        </button>
-      )}
+        {/* Delete button */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors text-gray-600 hover:text-neon-red shrink-0"
+            title="Delete timer"
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   )
 })

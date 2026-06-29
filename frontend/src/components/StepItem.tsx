@@ -184,7 +184,7 @@ export const StepItem = memo(function StepItem({ step, isAdmin, isProjectFront =
   // Get timer status - use selector to subscribe to changes for running timers
   const stepTimers = useTimerStore((state) => state.timers.get(step.id))
   // Use step.timerCount from server for initial indicator, supplement with store for real-time accuracy
-  const hasTimersFromServer = step.timerCount > 0
+  const hasTimersFromServer = (step.timerCount ?? 0) > 0
   const hasTimersFromStore = stepTimers && stepTimers.length > 0
   const hasTimers = hasTimersFromServer || hasTimersFromStore
   const hasRunningTimer = stepTimers ? stepTimers.some((t) => t.isRunning || t.id === runningTimerId) : false

@@ -80,7 +80,15 @@ export const useProjectStore = create<ProjectStore>()(
         set({ isLoading: true, error: null })
         try {
           const data = await fetchProjects()
-          set({ projects: data.projects, isLoading: false })
+          // Normalize timerCount for backward compatibility with old persisted data
+          const projects = data.projects.map((p: any) => ({
+            ...p,
+            steps: (p.steps || []).map((s: any) => ({
+              ...s,
+              timerCount: s.timerCount ?? 0,
+            })),
+          }))
+          set({ projects, isLoading: false })
         } catch (err: any) {
           console.error('[useProjectStore] loadProjects failed', err)
           set({ error: err.message || 'Failed to load projects', isLoading: false })
@@ -520,6 +528,7 @@ export const useProjectStore = create<ProjectStore>()(
     }),
     {
       name: 'project-tracker-storage',
+      version: 1, // Bump to clear old cache missing timerCount
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ projects: state.projects }),
     }
