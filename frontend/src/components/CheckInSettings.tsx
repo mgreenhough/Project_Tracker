@@ -11,7 +11,7 @@ const INTERVAL_OPTIONS = [
 ]
 
 export const CheckInSettings = memo(function CheckInSettings() {
-  const { preferences, savePreferences } = useCheckIn()
+  const { preferences, savePreferences } = useCheckIn({ manageTimers: false })
   const [isOpen, setIsOpen] = useState(false)
   const [dropdownStyle, setDropdownStyle] = useState({ top: 0, right: 0 })
   const buttonRef = useRef<HTMLButtonElement>(null)

@@ -500,3 +500,19 @@ da4c1b7
     - `frontend/src/components/StepItem.tsx` - Updated `hasTimers` logic to use both server `timerCount` and store data
 
 committed 8ccc863
+committed 922ac5a
+
+1035 [x] timer check in is sending two notifications
+    
+    Root cause: `useCheckIn()` hook was used in two components (`App.tsx` and `CheckInSettings.tsx`). Both instances ran the timer monitoring `useEffect`, so when a timer was running, each instance set up its own `setTimeout`, resulting in duplicate notifications.
+    
+    Solution: 
+    - Added optional `manageTimers` parameter to `useCheckIn()` hook (defaults to `true`)
+    - Guarded the timer monitoring `useEffect` with `if (!manageTimers) return`
+    - Updated `CheckInSettings.tsx` to call `useCheckIn({ manageTimers: false })` so it only reads/writes preferences without creating duplicate timeouts
+
+Files changed:
+- `frontend/src/hooks/useCheckIn.ts` - Added `options.manageTimers` parameter and guarded timer monitoring effect
+- `frontend/src/components/CheckInSettings.tsx` - Pass `{ manageTimers: false }` to useCheckIn
+
+1036 first time seeing timer checkin popup? why not before? - "continue timer" button didnt work. had to "skip" and start again

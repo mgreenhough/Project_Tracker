@@ -19,7 +19,8 @@ const defaultPreferences: CheckInPreferences = {
   intervalMinutes: 30,
 }
 
-export function useCheckIn() {
+export function useCheckIn(options: { manageTimers?: boolean } = {}) {
+  const { manageTimers = true } = options
   const runningTimerId = useTimerStore((s) => s.runningTimerId)
   const stopTimerById = useTimerStore((s) => s.stopTimerById)
   const startTimerById = useTimerStore((s) => s.startTimerById)
@@ -140,23 +141,24 @@ export function useCheckIn() {
 
         // Start grace period - timer continues running
         gracePeriodTimeoutRef.current = setTimeout(() => {
-          // Grace period expired - now stop the timer
-          stopTimerById(id, stepId).then(() => {
-            setCheckInState({
-              isCheckInPending: true,
-              awaySeconds: 0,
-              lastCheckInAt: Date.now(),
-            })
-
-            // Start tracking away time
-            if (awayIntervalRef.current) clearInterval(awayIntervalRef.current)
-            awayIntervalRef.current = setInterval(() => {
-              setCheckInState((prev) => ({
-                ...prev,
-                awaySeconds: prev.awaySeconds + 1,
-              }))
-            }, 1000)
+          // Grace period expired - show popup IMMEDIATELY, then stop timer
+          setCheckInState({
+            isCheckInPending: true,
+            awaySeconds: 0,
+            lastCheckInAt: Date.now(),
           })
+
+          // Start tracking away time immediately
+          if (awayIntervalRef.current) clearInterval(awayIntervalRef.current)
+          awayIntervalRef.current = setInterval(() => {
+            setCheckInState((prev) => ({
+              ...prev,
+              awaySeconds: prev.awaySeconds + 1,
+            }))
+          }, 1000)
+
+          // Stop timer in background - popup already showing
+          stopTimerById(id, stepId)
         }, GRACE_PERIOD_MS)
       }
     }, intervalMs)
@@ -169,7 +171,8 @@ export function useCheckIn() {
   const resumeTimer = useCallback(async () => {
     if (!runningTimerRef.current || !checkInState.isCheckInPending) return
 
-    const { id, stepId } = runningTimerRef.current
+    // Capture timer info BEFORE any state changes that could clear the ref
+    const timerToResume = runningTimerRef.current
 
     // Clear away time tracking
     if (awayIntervalRef.current) {
@@ -183,10 +186,16 @@ export function useCheckIn() {
       lastCheckInAt: null,
     })
 
-    // Restart the timer
-    await startTimerById(id, stepId)
+    // Clear runningTimerRef so the useEffect sees the timer as "new" when it starts
+    // and calls startCheckInTimer(). Otherwise the effect thinks this timer is already
+    // handled and skips setting up the next check-in interval.
+    runningTimerRef.current = null
 
-    // Restart check-in timer
+    // Restart the timer
+    await startTimerById(timerToResume.id, timerToResume.stepId)
+
+    // The useEffect will detect runningTimerId changed and call startCheckInTimer().
+    // We also call it here as a fallback in case the effect hasn't run yet.
     timerStartTimeRef.current = Date.now()
     startCheckInTimer()
   }, [checkInState.isCheckInPending, startTimerById, startCheckInTimer])
@@ -211,8 +220,10 @@ export function useCheckIn() {
 
   // Monitor running timer changes - only depend on runningTimerId
   useEffect(() => {
+    if (!manageTimers) return
     if (!runningTimerId) {
-      // No timer running - clear everything
+      // No timer running - clear timeouts/intervals only
+      // NEVER clear runningTimerRef here - we need it for check-in resume/skip
       if (checkInTimeoutRef.current) {
         clearTimeout(checkInTimeoutRef.current)
         checkInTimeoutRef.current = null
@@ -222,7 +233,6 @@ export function useCheckIn() {
         awayIntervalRef.current = null
       }
       timerStartTimeRef.current = null
-      runningTimerRef.current = null
       return
     }
 
@@ -251,7 +261,7 @@ export function useCheckIn() {
         startCheckInTimer()
       }
     }
-  }, [runningTimerId, startCheckInTimer, requestNotificationPermission])
+  }, [runningTimerId, startCheckInTimer, requestNotificationPermission, manageTimers])
 
   // Cleanup on unmount
   useEffect(() => {
