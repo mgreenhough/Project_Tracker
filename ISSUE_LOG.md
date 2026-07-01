@@ -515,4 +515,13 @@ Files changed:
 - `frontend/src/hooks/useCheckIn.ts` - Added `options.manageTimers` parameter and guarded timer monitoring effect
 - `frontend/src/components/CheckInSettings.tsx` - Pass `{ manageTimers: false }` to useCheckIn
 
-1036 first time seeing timer checkin popup? why not before? - "continue timer" button didnt work. had to "skip" and start again
+1036 [x] first time seeing timer checkin popup? why not before? - "continue timer" button didnt work. had to "skip" and start again
+    
+    Root cause: When the grace period expired, `stopTimerById` set `runningTimerId` to null, which triggered the `useEffect` before `setCheckInState({ isCheckInPending: true })` could run. The useEffect unconditionally cleared `runningTimerRef.current`, so `resumeTimer()` found the ref null and returned early. Additionally, the popup was gated behind the `stopTimerById` API call, making it inconsistent.
+    
+    Solution: 
+    - Moved `setCheckInState({ isCheckInPending: true })` BEFORE `stopTimerById()` so popup appears immediately
+    - Prevented useEffect from clearing `runningTimerRef` when timer stops (only `skipCheckIn()` clears it)
+    - `resumeTimer()` now clears `runningTimerRef` after restarting so next check-in interval sets up fresh
+
+Committed 1953: 5d73e4f

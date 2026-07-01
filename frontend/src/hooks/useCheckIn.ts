@@ -12,11 +12,13 @@ const CHECK_IN_KEY = 'timer-check-in-preferences'
 interface CheckInPreferences {
   enabled: boolean
   intervalMinutes: number
+  includeAwayTime: boolean
 }
 
 const defaultPreferences: CheckInPreferences = {
   enabled: true,
   intervalMinutes: 30,
+  includeAwayTime: false,
 }
 
 export function useCheckIn(options: { manageTimers?: boolean } = {}) {
@@ -24,6 +26,7 @@ export function useCheckIn(options: { manageTimers?: boolean } = {}) {
   const runningTimerId = useTimerStore((s) => s.runningTimerId)
   const stopTimerById = useTimerStore((s) => s.stopTimerById)
   const startTimerById = useTimerStore((s) => s.startTimerById)
+  const updateTimerById = useTimerStore((s) => s.updateTimerById)
 
   const [preferences, setPreferences] = useState<CheckInPreferences>(() => {
     const stored = localStorage.getItem(CHECK_IN_KEY)
@@ -191,6 +194,16 @@ export function useCheckIn(options: { manageTimers?: boolean } = {}) {
     // handled and skips setting up the next check-in interval.
     runningTimerRef.current = null
 
+    // Optionally add away time to the timer before resuming
+    if (preferences.includeAwayTime && checkInState.awaySeconds > 0) {
+      const { id, stepId } = timerToResume
+      const timer = useTimerStore.getState().timers.get(stepId)?.find((t) => t.id === id)
+      if (timer) {
+        const newElapsed = timer.elapsedSeconds + checkInState.awaySeconds
+        updateTimerById(id, stepId, { elapsedSeconds: newElapsed })
+      }
+    }
+
     // Restart the timer
     await startTimerById(timerToResume.id, timerToResume.stepId)
 
@@ -198,7 +211,7 @@ export function useCheckIn(options: { manageTimers?: boolean } = {}) {
     // We also call it here as a fallback in case the effect hasn't run yet.
     timerStartTimeRef.current = Date.now()
     startCheckInTimer()
-  }, [checkInState.isCheckInPending, startTimerById, startCheckInTimer])
+  }, [checkInState.isCheckInPending, checkInState.awaySeconds, startTimerById, startCheckInTimer, preferences.includeAwayTime, updateTimerById])
 
   // Skip check-in and stay paused
   const skipCheckIn = useCallback(() => {

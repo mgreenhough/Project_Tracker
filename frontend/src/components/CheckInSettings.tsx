@@ -59,6 +59,10 @@ export const CheckInSettings = memo(function CheckInSettings() {
     savePreferences({ enabled: !preferences.enabled })
   }, [preferences.enabled, savePreferences])
 
+  const handleAwayTimeToggle = useCallback(() => {
+    savePreferences({ includeAwayTime: !preferences.includeAwayTime })
+  }, [preferences.includeAwayTime, savePreferences])
+
   const currentLabel = INTERVAL_OPTIONS.find((opt) => opt.value === preferences.intervalMinutes)?.label || `${preferences.intervalMinutes} min`
 
   return (
@@ -105,24 +109,46 @@ export const CheckInSettings = memo(function CheckInSettings() {
 
             {/* Interval Selection */}
             {preferences.enabled && (
-              <div>
-                <span className="text-xs text-gray-400 block mb-2">Check-in interval</span>
-                <div className="grid grid-cols-2 gap-2">
-                  {INTERVAL_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => handleIntervalChange(option.value)}
-                      className={`px-3 py-2 text-xs rounded-lg border transition-colors ${
-                        preferences.intervalMinutes === option.value
-                          ? 'bg-neon-blue/20 text-neon-blue border-neon-blue/40'
-                          : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              <>
+                <div>
+                  <span className="text-xs text-gray-400 block mb-2">Check-in interval</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {INTERVAL_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleIntervalChange(option.value)}
+                        className={`px-3 py-2 text-xs rounded-lg border transition-colors ${
+                          preferences.intervalMinutes === option.value
+                            ? 'bg-neon-blue/20 text-neon-blue border-neon-blue/40'
+                            : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                {/* Include Away Time Toggle */}
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-800">
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-300">Include away time</span>
+                    <span className="text-xs text-gray-500">Add idle time to timer on resume</span>
+                  </div>
+                  <button
+                    onClick={handleAwayTimeToggle}
+                    className={`w-11 h-6 rounded-full transition-colors relative ${
+                      preferences.includeAwayTime ? 'bg-neon-orange/50' : 'bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                        preferences.includeAwayTime ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </>
             )}
 
             {!preferences.enabled && (
