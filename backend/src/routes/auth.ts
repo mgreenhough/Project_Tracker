@@ -8,10 +8,6 @@ const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret';
 
-// In production, store hashed password in env; here we support a simple hash check
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
-
 function generateTokens(payload: { id: string; email: string }) {
   const accessToken = jwt.sign({ ...payload, role: 'admin' }, JWT_SECRET, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ ...payload, role: 'admin' }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
@@ -19,6 +15,10 @@ function generateTokens(payload: { id: string; email: string }) {
 }
 
 router.post('/login', async (req, res) => {
+  // Read env vars inside handler so dotenv has loaded them first
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
+
   const parse = loginSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
