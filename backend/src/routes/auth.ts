@@ -35,9 +35,6 @@ router.post('/login', async (req, res) => {
   let valid = false;
   if (ADMIN_PASSWORD_HASH) {
     valid = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
-  } else {
-    // Dev fallback — plain text comparison when no hash configured
-    valid = password === 'admin123';
   }
 
   if (!valid) {
