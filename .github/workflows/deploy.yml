@@ -77,15 +77,11 @@ jobs:
 
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          envs: ADMIN_EMAIL,ADMIN_PASSWORD_HASH
           timeout: 60s
           command_timeout: 30m
           script_stop: true
@@ -117,8 +113,8 @@ jobs:
             echo "PORT=3001" > .env
             echo "NODE_ENV=production" >> .env
             echo "CORS_ORIGINS=*" >> .env
-            echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> .env
-            echo "ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}" >> .env
+            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
+            echo "ADMIN_PASSWORD_HASH=${{ secrets.ADMIN_PASSWORD_HASH }}" >> .env
             if [ -n "$JWT_SECRET_VALUE" ]; then
               echo "JWT_SECRET=$JWT_SECRET_VALUE" >> .env
             else
