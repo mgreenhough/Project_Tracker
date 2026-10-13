@@ -210,11 +210,11 @@ export const TimerItem = memo(function TimerItem({ timer, stepId, isAdmin }: Tim
             type="button"
             onClick={() => updateTimerById(timer.id, stepId, { checkInDisabled: !timer.checkInDisabled })}
             className={`w-7 h-7 flex items-center justify-center rounded active:bg-white/5 transition-colors shrink-0 ${
-              timer.checkInDisabled ? 'text-neon-orange' : 'text-gray-600'
+              timer.checkInDisabled ? 'text-gray-600' : 'text-neon-orange'
             } hover:text-neon-orange`}
             title={timer.checkInDisabled ? 'Check-in disabled (timer runs continuously)' : 'Enable check-in reminders'}
           >
-            {timer.checkInDisabled ? '🔔' : '🔕'}
+            {timer.checkInDisabled ? '🔕' : '🔔'}
           </button>
         )}
 
